@@ -1,16 +1,16 @@
 """Advanced visualization library and chart registry using Plotly."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional
-import numpy as np
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+
 from src.analytics.metrics import (
     get_decade_counts,
     get_genre_counts,
     get_metadata_completeness,
-    get_unique_genres_list,
 )
 from src.config import THEME
 
@@ -30,8 +30,8 @@ class ChartDefinition:
     title: str
     category: str
     description: str
-    required_columns: List[str]
-    builder_func: Callable[..., Optional[go.Figure]]
+    required_columns: list[str]
+    builder_func: Callable[..., go.Figure | None]
 
     def is_available(self, df: pd.DataFrame) -> bool:
         """Check whether the dataset contains the necessary columns for this chart."""
@@ -42,7 +42,7 @@ class ChartDefinition:
 # GENRE ANALYSIS CHARTS
 # ==============================================================================
 
-def plot_genre_bar(df: pd.DataFrame, top_n: int = 12) -> Optional[go.Figure]:
+def plot_genre_bar(df: pd.DataFrame, top_n: int = 12) -> go.Figure | None:
     """Horizontal bar chart of most common genres."""
     df_genres = get_genre_counts(df, top_n=top_n)
     if df_genres.empty:
@@ -67,7 +67,7 @@ def plot_genre_bar(df: pd.DataFrame, top_n: int = 12) -> Optional[go.Figure]:
     return fig
 
 
-def plot_genre_share_donut(df: pd.DataFrame, top_n: int = 8) -> Optional[go.Figure]:
+def plot_genre_share_donut(df: pd.DataFrame, top_n: int = 8) -> go.Figure | None:
     """Donut chart illustrating proportional genre breakdown."""
     df_genres = get_genre_counts(df, top_n=top_n)
     if df_genres.empty:
@@ -96,7 +96,7 @@ def plot_genre_share_donut(df: pd.DataFrame, top_n: int = 8) -> Optional[go.Figu
     return fig
 
 
-def plot_genre_treemap(df: pd.DataFrame, top_n: int = 15) -> Optional[go.Figure]:
+def plot_genre_treemap(df: pd.DataFrame, top_n: int = 15) -> go.Figure | None:
     """Treemap of genre hierarchy and representation."""
     df_genres = get_genre_counts(df, top_n=top_n)
     if df_genres.empty:
@@ -114,7 +114,7 @@ def plot_genre_treemap(df: pd.DataFrame, top_n: int = 15) -> Optional[go.Figure]
     return fig
 
 
-def plot_genre_cooccurrence(df: pd.DataFrame, top_n: int = 8) -> Optional[go.Figure]:
+def plot_genre_cooccurrence(df: pd.DataFrame, top_n: int = 8) -> go.Figure | None:
     """Heatmap showing frequency of genres paired together in movies."""
     if "cleaned_genres" not in df.columns:
         return None
@@ -150,7 +150,7 @@ def plot_genre_cooccurrence(df: pd.DataFrame, top_n: int = 8) -> Optional[go.Fig
 # RATING ANALYSIS CHARTS
 # ==============================================================================
 
-def plot_rating_histogram(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_rating_histogram(df: pd.DataFrame) -> go.Figure | None:
     """Rating distribution histogram with mean line."""
     if "cleaned_rating" not in df.columns:
         return None
@@ -172,7 +172,7 @@ def plot_rating_histogram(df: pd.DataFrame) -> Optional[go.Figure]:
     return fig
 
 
-def plot_rating_box(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_rating_box(df: pd.DataFrame) -> go.Figure | None:
     """Box plot of movie ratings showing quartiles and outliers."""
     if "cleaned_rating" not in df.columns:
         return None
@@ -192,7 +192,7 @@ def plot_rating_box(df: pd.DataFrame) -> Optional[go.Figure]:
     return fig
 
 
-def plot_rating_by_genre(df: pd.DataFrame, top_n: int = 8) -> Optional[go.Figure]:
+def plot_rating_by_genre(df: pd.DataFrame, top_n: int = 8) -> go.Figure | None:
     """Average rating grouped by top genres with movie counts."""
     if "cleaned_rating" not in df.columns or "cleaned_genres" not in df.columns:
         return None
@@ -230,7 +230,7 @@ def plot_rating_by_genre(df: pd.DataFrame, top_n: int = 8) -> Optional[go.Figure
     return fig
 
 
-def plot_rating_vs_votes_scatter(df: pd.DataFrame, log_votes: bool = True) -> Optional[go.Figure]:
+def plot_rating_vs_votes_scatter(df: pd.DataFrame, log_votes: bool = True) -> go.Figure | None:
     """Scatter plot comparing movie ratings against vote counts."""
     if "cleaned_rating" not in df.columns or "cleaned_vote_count" not in df.columns:
         return None
@@ -258,7 +258,7 @@ def plot_rating_vs_votes_scatter(df: pd.DataFrame, log_votes: bool = True) -> Op
 # RELEASE YEAR ANALYSIS CHARTS
 # ==============================================================================
 
-def plot_release_year_histogram(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_release_year_histogram(df: pd.DataFrame) -> go.Figure | None:
     """Histogram of movie releases over time."""
     if "cleaned_release_year" not in df.columns:
         return None
@@ -279,7 +279,7 @@ def plot_release_year_histogram(df: pd.DataFrame) -> Optional[go.Figure]:
     return fig
 
 
-def plot_movies_by_decade(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_movies_by_decade(df: pd.DataFrame) -> go.Figure | None:
     """Bar chart aggregating movies produced across decades."""
     df_decades = get_decade_counts(df)
     if df_decades.empty:
@@ -298,7 +298,7 @@ def plot_movies_by_decade(df: pd.DataFrame) -> Optional[go.Figure]:
     return fig
 
 
-def plot_rating_trend_by_decade(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_rating_trend_by_decade(df: pd.DataFrame) -> go.Figure | None:
     """Line chart tracking average movie ratings across decades."""
     if "cleaned_release_year" not in df.columns or "cleaned_rating" not in df.columns:
         return None
@@ -329,7 +329,7 @@ def plot_rating_trend_by_decade(df: pd.DataFrame) -> Optional[go.Figure]:
 # RUNTIME & POPULARITY CHARTS
 # ==============================================================================
 
-def plot_runtime_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_runtime_distribution(df: pd.DataFrame) -> go.Figure | None:
     """Runtime distribution histogram with median marker."""
     if "cleaned_runtime" not in df.columns:
         return None
@@ -351,7 +351,7 @@ def plot_runtime_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
     return fig
 
 
-def plot_runtime_vs_rating_scatter(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_runtime_vs_rating_scatter(df: pd.DataFrame) -> go.Figure | None:
     """Scatter plot exploring relationship between movie length and rating."""
     if "cleaned_runtime" not in df.columns or "cleaned_rating" not in df.columns:
         return None
@@ -377,7 +377,7 @@ def plot_runtime_vs_rating_scatter(df: pd.DataFrame) -> Optional[go.Figure]:
 # METADATA & DATA QUALITY CHARTS
 # ==============================================================================
 
-def plot_metadata_completeness_chart(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_metadata_completeness_chart(df: pd.DataFrame) -> go.Figure | None:
     """Horizontal bar chart indicating percentage completeness of key metadata fields."""
     if df.empty:
         return None
@@ -404,7 +404,7 @@ def plot_metadata_completeness_chart(df: pd.DataFrame) -> Optional[go.Figure]:
     return fig
 
 
-def plot_overview_word_count(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_overview_word_count(df: pd.DataFrame) -> go.Figure | None:
     """Distribution of word counts across movie overviews/descriptions."""
     if "cleaned_overview" not in df.columns:
         return None
@@ -424,7 +424,7 @@ def plot_overview_word_count(df: pd.DataFrame) -> Optional[go.Figure]:
     return fig
 
 
-def plot_recommendation_similarity_scores(rec_df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_recommendation_similarity_scores(rec_df: pd.DataFrame) -> go.Figure | None:
     """Plot similarity match scores for recommendations."""
     if rec_df.empty or "similarity_pct" not in rec_df.columns:
         return None
@@ -452,7 +452,7 @@ def plot_recommendation_similarity_scores(rec_df: pd.DataFrame) -> Optional[go.F
 # CENTRAL CHART REGISTRY
 # ==============================================================================
 
-CHART_REGISTRY: List[ChartDefinition] = [
+CHART_REGISTRY: list[ChartDefinition] = [
     ChartDefinition(
         id="genre_bar",
         title="Top Movie Genres",
@@ -576,6 +576,6 @@ CHART_REGISTRY: List[ChartDefinition] = [
 ]
 
 
-def get_available_charts(df: pd.DataFrame) -> List[ChartDefinition]:
+def get_available_charts(df: pd.DataFrame) -> list[ChartDefinition]:
     """Return all chart definitions whose required columns are present in the dataset."""
     return [chart for chart in CHART_REGISTRY if chart.is_available(df)]

@@ -2,6 +2,7 @@
 
 import pandas as pd
 import pytest
+
 from src.analytics.visualizations import (
     CHART_REGISTRY,
     get_available_charts,

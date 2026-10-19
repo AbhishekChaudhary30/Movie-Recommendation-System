@@ -343,10 +343,13 @@ CineScope is configured for zero-friction free deployment to **Streamlit Communi
 1. Push this repository to a **Public or Private GitHub Repository**.
 2. Sign in to [Streamlit Community Cloud](https://share.streamlit.io/) with your GitHub account.
 3. Click **"New App"**.
-4. Select your repository: `movie-recommendation-system`.
-5. Set the Main file path to: `app.py`.
-6. Click **"Deploy!"**.
-7. The platform will automatically install packages from `requirements.txt` and launch the application.
+4. Select your repository: `movie-recommendation-system`, branch: `main` (or `master`).
+5. Set the **Main file path** to: `app.py`.
+6. Under **Advanced Settings**, ensure Python version is set to `3.11` (automatically resolved via `.python-version`).
+7. Leave Secrets empty (CineScope is 100% offline and self-contained; no API keys or database credentials needed).
+8. Click **"Deploy!"**.
+9. The platform will automatically install packages from `requirements.txt` and launch the application.
+10. Once deployed, click **"🚀 Load Curated Sample Dataset"** to immediately test all recommendation, comparison, and analytical features live.
 
 ---
 

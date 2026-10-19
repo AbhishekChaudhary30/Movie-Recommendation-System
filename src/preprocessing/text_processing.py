@@ -1,11 +1,11 @@
 """Text preprocessing routines for recommendation metadata."""
 
 import re
-from typing import List, Optional
+
 import pandas as pd
 
 
-def clean_text(text: Optional[str]) -> str:
+def clean_text(text: str | None) -> str:
     """Normalize general text: lowercase, remove special characters, collapse whitespace."""
     if text is None or pd.isna(text):
         return ""
@@ -29,7 +29,7 @@ def entity_to_token(name: str) -> str:
     return clean
 
 
-def process_entities_string(val_str: Optional[str], max_items: int = 5) -> str:
+def process_entities_string(val_str: str | None, max_items: int = 5) -> str:
     """
     Tokenize comma-separated entity lists.
     Example: 'Leonardo DiCaprio, Joseph Gordon-Levitt'
@@ -37,7 +37,7 @@ def process_entities_string(val_str: Optional[str], max_items: int = 5) -> str:
     """
     if not val_str or pd.isna(val_str):
         return ""
-    tokens: List[str] = []
+    tokens: list[str] = []
     for item in str(val_str).split(","):
         token = entity_to_token(item)
         if token:
@@ -45,14 +45,14 @@ def process_entities_string(val_str: Optional[str], max_items: int = 5) -> str:
     return " ".join(tokens[:max_items])
 
 
-def process_genres_string(genres_str: Optional[str]) -> str:
+def process_genres_string(genres_str: str | None) -> str:
     """
     Normalize genres string into clean tokens.
     Example: 'Science Fiction, Action' -> 'science_fiction action'
     """
     if not genres_str or pd.isna(genres_str):
         return ""
-    tokens: List[str] = []
+    tokens: list[str] = []
     for g in str(genres_str).split(","):
         g_clean = entity_to_token(g)
         if g_clean:

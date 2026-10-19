@@ -1,17 +1,17 @@
 """Recommendation engine package."""
 
-from src.recommendation.similarity import (
-    compute_query_similarity,
-    compute_full_similarity_matrix,
-)
 from src.recommendation.content_based import (
     ContentBasedRecommender,
     RecommendationItem,
 )
+from src.recommendation.similarity import (
+    compute_full_similarity_matrix,
+    compute_query_similarity,
+)
 
 __all__ = [
-    "compute_query_similarity",
-    "compute_full_similarity_matrix",
     "ContentBasedRecommender",
     "RecommendationItem",
+    "compute_full_similarity_matrix",
+    "compute_query_similarity",
 ]

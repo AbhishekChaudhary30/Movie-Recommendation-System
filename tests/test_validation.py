@@ -1,6 +1,7 @@
 """Unit tests for schema detection and dataset validation."""
 
 import pandas as pd
+
 from src.data.schema import detect_schema, normalize_column_name
 from src.data.validation import validate_dataset
 

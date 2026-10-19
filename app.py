@@ -3,19 +3,15 @@
 Intelligent Movie Discovery & Recommendation Analytics.
 """
 
-from datetime import datetime
-import io
+import html
 import math
-from pathlib import Path
-from typing import Any, Dict, List, Optional
-import numpy as np
+
 import pandas as pd
 import streamlit as st
+
 from src.analytics.metrics import (
     compute_overview_metrics,
     generate_executive_insights,
-    get_decade_counts,
-    get_genre_counts,
     get_metadata_completeness,
     get_unique_genres_list,
 )
@@ -24,20 +20,15 @@ from src.analytics.reports import (
     generate_executive_summary_markdown,
 )
 from src.analytics.visualizations import (
-    CHART_REGISTRY,
     get_available_charts,
     plot_genre_bar,
-    plot_genre_cooccurrence,
     plot_genre_share_donut,
-    plot_genre_treemap,
     plot_metadata_completeness_chart,
     plot_movies_by_decade,
     plot_overview_word_count,
-    plot_rating_box,
     plot_rating_by_genre,
     plot_rating_histogram,
     plot_rating_trend_by_decade,
-    plot_rating_vs_votes_scatter,
     plot_recommendation_similarity_scores,
     plot_release_year_histogram,
     plot_runtime_distribution,
@@ -55,6 +46,7 @@ from src.config import (
 )
 from src.data.cleaning import clean_dataset
 from src.data.loader import load_csv
+from src.data.posters import get_poster_source
 from src.data.schema import detect_schema
 from src.data.validation import validate_dataset
 from src.recommendation.content_based import ContentBasedRecommender
@@ -201,6 +193,8 @@ def init_session_state():
         st.session_state.explorer_page_num = 1
     if "auto_analysis_run" not in st.session_state:
         st.session_state.auto_analysis_run = False
+    if "man_g_n" not in st.session_state:
+        st.session_state.man_g_n = 10
 
 
 init_session_state()
@@ -778,11 +772,12 @@ elif st.session_state.nav_page == "🔍 Movie Explorer":
         grid_cols = st.columns(3)
         for i, (_, row) in enumerate(page_records.iterrows()):
             with grid_cols[i % 3]:
-                render_movie_card(row.to_dict())
-                # Quick Action to Seed Recommendations
-                if st.button(f"🎯 Find Similar Movies", key=f"seed_{row['display_title']}", use_container_width=True):
-                    st.session_state.selected_movie = row["display_title"]
-                    navigate_to("🎯 Recommendations")
+                with st.container(border=True):
+                    render_movie_card(row.to_dict())
+                    # Quick Action to Seed Recommendations
+                    if st.button("🎯 Find Similar Movies", key=f"seed_{row['display_title']}", use_container_width=True):
+                        st.session_state.selected_movie = row["display_title"]
+                        navigate_to("🎯 Recommendations")
 
     st.write("---")
     # Next Navigation Button
@@ -919,38 +914,55 @@ elif st.session_state.nav_page == "🎯 Recommendations":
 
             # Render Recommendation Cards
             for idx, row in recs_df.iterrows():
-                st.markdown(
-                    f"""
-                    <div class="rec-card">
-                        <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                            <div class="rec-title">#{idx+1}. {row['display_title']}</div>
-                            <div><span class="rec-score-badge">Cosine Match: {row['similarity_pct']}%</span></div>
-                        </div>
-                        <div style="margin-bottom: 8px;">
-                            <span class="meta-tag">📅 {row['cleaned_release_year'] or 'Year N/A'}</span>
-                            <span class="meta-tag">⭐ {row['cleaned_rating'] or 'Rating N/A'}</span>
-                            <span class="meta-tag">🎭 {row['cleaned_genres'] or 'N/A'}</span>
-                            <span class="meta-tag">🎬 {row['cleaned_director'] or 'Director N/A'}</span>
-                        </div>
-                        <div style="font-size: 0.88rem; color: {THEME['text_secondary']}; margin-bottom: 6px;">
-                            <b>Cast:</b> {row['cleaned_cast'] or 'N/A'}
-                        </div>
-                        <div style="font-size: 0.88rem; color: #4A5568; line-height: 1.4;">
-                            {row['cleaned_overview'] or ''}
-                        </div>
-                        <div class="exp-box">
-                            <b>🔍 Recommendation Rationale:</b> {row['explanation']}
-                        </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+                m_row = row.to_dict()
+                poster_src = get_poster_source(m_row)
+                with st.container(border=True):
+                    col_p, col_info = st.columns([1, 4])
+                    with col_p:
+                        if poster_src:
+                            try:
+                                st.image(poster_src, use_container_width=True)
+                            except Exception:
+                                st.markdown(
+                                    f"<div style='background-color: {THEME['surface_secondary']}; border: 1px dashed {THEME['border_subtle']}; border-radius: 6px; height: 160px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;'>🎬</div>",
+                                    unsafe_allow_html=True,
+                                )
+                        else:
+                            st.markdown(
+                                f"<div style='background-color: {THEME['surface_secondary']}; border: 1px dashed {THEME['border_subtle']}; border-radius: 6px; height: 160px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;'>🎬</div>",
+                                unsafe_allow_html=True,
+                            )
+                    with col_info:
+                        st.markdown(
+                            f"<div style='display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;'>"
+                            f"<div style='font-size: 1.15rem; font-weight: 800; color: {THEME['text_primary']};'>#{idx+1}. {html.escape(str(row['display_title']))}</div>"
+                            f"<div><span class='rec-score-badge'>Cosine Match: {row['similarity_pct']}%</span></div>"
+                            f"</div>",
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(
+                            f"<div style='margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 6px;'>"
+                            f"<span class='meta-tag'>📅 {row['cleaned_release_year'] or 'Year N/A'}</span>"
+                            f"<span class='meta-tag'>⭐ {row['cleaned_rating'] or 'Rating N/A'}</span>"
+                            f"<span class='meta-tag'>🎭 {html.escape(str(row['cleaned_genres'] or 'N/A'))}</span>"
+                            f"<span class='meta-tag'>🎬 {html.escape(str(row['cleaned_director'] or 'Director N/A'))}</span>"
+                            f"</div>",
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(
+                            f"<div style='font-size: 0.88rem; color: {THEME['text_secondary']}; margin-bottom: 6px;'>"
+                            f"<b>Cast:</b> {html.escape(str(row['cleaned_cast'] or 'N/A'))}</div>"
+                            f"<div style='font-size: 0.88rem; color: #4A5568; line-height: 1.4; margin-bottom: 8px;'>"
+                            f"{html.escape(str(row['cleaned_overview'] or ''))}</div>"
+                            f"<div class='exp-box'><b>🔍 Recommendation Rationale:</b> {html.escape(str(row['explanation']))}</div>",
+                            unsafe_allow_html=True,
+                        )
 
             # Match Strength Bar Chart
             st.write("---")
             fig_match = plot_recommendation_similarity_scores(recs_df)
             if fig_match:
-                st.plotly_chart(fig_match, use_container_width=True)
+                st.plotly_chart(fig_match, use_container_width=True, key="rec_similarity_scores_chart")
 
             # Comparison and Export Options
             col_exp1, col_exp2 = st.columns([1, 1])
@@ -1049,10 +1061,11 @@ elif st.session_state.nav_page == "⚖️ Compare Movies":
         comp_cols = st.columns(len(selected_comp))
         for idx, title in enumerate(selected_comp):
             with comp_cols[idx]:
-                sub = df[df["display_title"] == title]
-                if not sub.empty:
-                    m_dict = sub.iloc[0].to_dict()
-                    render_movie_card(m_dict, show_overview=True)
+                with st.container(border=True):
+                    sub = df[df["display_title"] == title]
+                    if not sub.empty:
+                        m_dict = sub.iloc[0].to_dict()
+                        render_movie_card(m_dict, show_overview=True)
 
         # Tabular Comparison Matrix
         st.write("---")
@@ -1147,23 +1160,23 @@ elif st.session_state.nav_page == "📊 Analytics Dashboard":
             with grid_c1:
                 fig_g = plot_genre_bar(df, top_n=10)
                 if fig_g:
-                    st.plotly_chart(fig_g, use_container_width=True)
+                    st.plotly_chart(fig_g, use_container_width=True, key="analytics_auto_genre_bar")
 
             with grid_c2:
                 fig_r = plot_rating_histogram(df)
                 if fig_r:
-                    st.plotly_chart(fig_r, use_container_width=True)
+                    st.plotly_chart(fig_r, use_container_width=True, key="analytics_auto_rating_histogram")
 
             grid_c3, grid_c4 = st.columns(2)
             with grid_c3:
                 fig_y = plot_release_year_histogram(df)
                 if fig_y:
-                    st.plotly_chart(fig_y, use_container_width=True)
+                    st.plotly_chart(fig_y, use_container_width=True, key="analytics_auto_release_year_histogram")
 
             with grid_c4:
                 fig_comp = plot_metadata_completeness_chart(df)
                 if fig_comp:
-                    st.plotly_chart(fig_comp, use_container_width=True)
+                    st.plotly_chart(fig_comp, use_container_width=True, key="analytics_auto_metadata_completeness")
 
             # Executive Report Export Button
             st.write("---")
@@ -1188,55 +1201,55 @@ elif st.session_state.nav_page == "📊 Analytics Dashboard":
                 top_n_g = st.slider("Number of Top Genres:", min_value=5, max_value=20, value=10, key="man_g_n")
                 fig1 = plot_genre_bar(df, top_n=top_n_g)
                 if fig1:
-                    st.plotly_chart(fig1, use_container_width=True)
+                    st.plotly_chart(fig1, use_container_width=True, key="analytics_manual_genre_bar")
             with gc2:
                 fig2 = plot_genre_share_donut(df, top_n=8)
                 if fig2:
-                    st.plotly_chart(fig2, use_container_width=True)
+                    st.plotly_chart(fig2, use_container_width=True, key="analytics_manual_genre_donut")
 
         elif category_choice == "Rating Analysis":
             rc1, rc2 = st.columns(2)
             with rc1:
                 fig_r1 = plot_rating_histogram(df)
                 if fig_r1:
-                    st.plotly_chart(fig_r1, use_container_width=True)
+                    st.plotly_chart(fig_r1, use_container_width=True, key="analytics_manual_rating_histogram")
             with rc2:
                 fig_r2 = plot_rating_by_genre(df, top_n=8)
                 if fig_r2:
-                    st.plotly_chart(fig_r2, use_container_width=True)
+                    st.plotly_chart(fig_r2, use_container_width=True, key="analytics_manual_rating_by_genre")
 
         elif category_choice == "Release Year Trends":
             yc1, yc2 = st.columns(2)
             with yc1:
                 fig_y1 = plot_movies_by_decade(df)
                 if fig_y1:
-                    st.plotly_chart(fig_y1, use_container_width=True)
+                    st.plotly_chart(fig_y1, use_container_width=True, key="analytics_manual_movies_by_decade")
             with yc2:
                 fig_y2 = plot_rating_trend_by_decade(df)
                 if fig_y2:
-                    st.plotly_chart(fig_y2, use_container_width=True)
+                    st.plotly_chart(fig_y2, use_container_width=True, key="analytics_manual_rating_trend_by_decade")
 
         elif category_choice == "Runtime & Popularity":
             rtc1, rtc2 = st.columns(2)
             with rtc1:
                 fig_rt1 = plot_runtime_distribution(df)
                 if fig_rt1:
-                    st.plotly_chart(fig_rt1, use_container_width=True)
+                    st.plotly_chart(fig_rt1, use_container_width=True, key="analytics_manual_runtime_distribution")
             with rtc2:
                 fig_rt2 = plot_runtime_vs_rating_scatter(df)
                 if fig_rt2:
-                    st.plotly_chart(fig_rt2, use_container_width=True)
+                    st.plotly_chart(fig_rt2, use_container_width=True, key="analytics_manual_runtime_scatter")
 
         elif category_choice == "Data Quality & Metadata":
             qc1, qc2 = st.columns(2)
             with qc1:
                 fig_q1 = plot_metadata_completeness_chart(df)
                 if fig_q1:
-                    st.plotly_chart(fig_q1, use_container_width=True)
+                    st.plotly_chart(fig_q1, use_container_width=True, key="analytics_manual_metadata_completeness")
             with qc2:
                 fig_q2 = plot_overview_word_count(df)
                 if fig_q2:
-                    st.plotly_chart(fig_q2, use_container_width=True)
+                    st.plotly_chart(fig_q2, use_container_width=True, key="analytics_manual_overview_word_count")
 
     st.write("---")
     # Next Navigation Button
@@ -1300,7 +1313,7 @@ elif st.session_state.nav_page == "📈 Advanced Visualizations":
             try:
                 fig = chart_def.builder_func(df)
                 if fig:
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key=f"adv_viz_{chart_def.id}_{idx}")
                 else:
                     st.info(f"Chart '{chart_def.title}' cannot be rendered with current dataset values.")
             except Exception as e:
@@ -1468,9 +1481,9 @@ elif st.session_state.nav_page == "ℹ️ About This Project":
 
     with t1:
         st.markdown(
-            f"""
+            """
             #### System Architecture & Modular Decoupling
-            
+
             ```
             ┌─────────────────────────────────────────────────────────────┐
             │                     CineScope UI (Streamlit)                │
@@ -1498,7 +1511,7 @@ elif st.session_state.nav_page == "ℹ️ About This Project":
             │      • Quality Validation & Cleaning Audit Reporter         │
             └─────────────────────────────────────────────────────────────┘
             ```
-            
+
             - **Strict Separation of Concerns**: Core data, recommendation, and analytics modules contain pure Python logic completely decoupled from Streamlit UI elements, allowing 100% unit testing coverage in headless CI environments.
             - **State Machine Safety**: Dynamic dataset transitions instantly flush stale similarity matrices, cached recommendations, and active filters to prevent dirty-read anomalies.
             """
@@ -1533,7 +1546,7 @@ elif st.session_state.nav_page == "ℹ️ About This Project":
 
     with t3:
         st.markdown(
-            f"""
+            """
             #### Privacy, Security & Resource Governance
 
             - **Zero External API Dependencies**: CineScope runs entirely offline using Scikit-Learn, Pandas, NumPy, and Streamlit — no paid OpenAI, TMDB, or third-party API keys required.
@@ -1545,7 +1558,7 @@ elif st.session_state.nav_page == "ℹ️ About This Project":
 
     with t4:
         st.markdown(
-            f"""
+            """
             #### Portfolio & Technical Interview Discussion Points
 
             | Question / Topic | CineScope Engineering Response |

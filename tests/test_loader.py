@@ -1,8 +1,10 @@
 """Unit tests for dataset loading and file validation."""
 
 from io import StringIO
-import pytest
+
 import pandas as pd
+import pytest
+
 from src.data.loader import check_file_size, load_csv
 from src.utils.exceptions import DataLoadError
 
@@ -61,7 +63,7 @@ def test_check_file_size_limit(tmp_path):
     large_file = tmp_path / "oversize.csv"
     # Write 1024 bytes and test with max_size_mb = 0 (or very small threshold)
     large_file.write_text("a" * 2000, encoding="utf-8")
-    
+
     with pytest.raises(DataLoadError, match="exceeds maximum"):
         # 1 byte limit to trigger size error
         check_file_size(large_file, max_size_mb=0)

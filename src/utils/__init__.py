@@ -1,20 +1,20 @@
 """Utilities package."""
 from src.utils.exceptions import (
-    MovieRecommendationError,
-    DataLoadError,
-    ValidationError,
     DataCleaningError,
-    RecommendationEngineError,
+    DataLoadError,
     InsufficientFeaturesError,
+    MovieRecommendationError,
+    RecommendationEngineError,
+    ValidationError,
 )
 from src.utils.logging_config import get_logger
 
 __all__ = [
-    "MovieRecommendationError",
-    "DataLoadError",
-    "ValidationError",
     "DataCleaningError",
-    "RecommendationEngineError",
+    "DataLoadError",
     "InsufficientFeaturesError",
+    "MovieRecommendationError",
+    "RecommendationEngineError",
+    "ValidationError",
     "get_logger",
 ]

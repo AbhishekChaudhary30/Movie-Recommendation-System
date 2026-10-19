@@ -1,8 +1,10 @@
 """Validation layer for uploaded movie datasets and detected schemas."""
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any
+
 import pandas as pd
+
 from src.data.schema import SchemaMapping
 from src.utils.logging_config import get_logger
 
@@ -15,12 +17,12 @@ class ValidationReport:
     row_count: int
     column_count: int
     schema_mapping: SchemaMapping
-    critical_errors: List[str] = field(default_factory=list)
-    warnings: List[str] = field(default_factory=list)
-    column_stats: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    suspicious_values: Dict[str, int] = field(default_factory=dict)
+    critical_errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    column_stats: dict[str, dict[str, Any]] = field(default_factory=dict)
+    suspicious_values: dict[str, int] = field(default_factory=dict)
 
-    def summary_dict(self) -> Dict[str, Any]:
+    def summary_dict(self) -> dict[str, Any]:
         """Convert report to dictionary for serializable logs or exports."""
         return {
             "is_valid": self.is_valid,
@@ -39,10 +41,10 @@ def validate_dataset(df: pd.DataFrame, schema_mapping: SchemaMapping) -> Validat
     Validate dataset structure, schema mapping, and column integrity.
     Identifies missing mandatory fields, feature coverage, and suspicious data.
     """
-    critical_errors: List[str] = []
-    warnings: List[str] = []
-    suspicious_values: Dict[str, int] = {}
-    col_stats: Dict[str, Dict[str, Any]] = {}
+    critical_errors: list[str] = []
+    warnings: list[str] = []
+    suspicious_values: dict[str, int] = {}
+    col_stats: dict[str, dict[str, Any]] = {}
 
     row_count, col_count = df.shape
 

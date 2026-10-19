@@ -1,18 +1,17 @@
 """Comprehensive edge-case and boundary verification test suite."""
 
-import io
-import numpy as np
 import pandas as pd
 import pytest
-from src.analytics.metrics import compute_overview_metrics, get_genre_counts
+
+from src.analytics.metrics import compute_overview_metrics
 from src.analytics.visualizations import CHART_REGISTRY
-from src.config import DEFAULT_FEATURE_WEIGHTS, MAX_FILE_SIZE_MB
+from src.config import MAX_FILE_SIZE_MB
 from src.data.cleaning import clean_dataset
-from src.data.loader import check_file_size, load_csv
-from src.data.schema import SchemaMapping, detect_schema
+from src.data.loader import check_file_size
+from src.data.schema import detect_schema
 from src.data.validation import validate_dataset
 from src.recommendation.content_based import ContentBasedRecommender
-from src.utils.exceptions import DataLoadError, RecommendationEngineError, ValidationError
+from src.utils.exceptions import DataLoadError, RecommendationEngineError
 
 
 def test_single_movie_catalog_recommendation():

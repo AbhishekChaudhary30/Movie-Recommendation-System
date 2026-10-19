@@ -1,7 +1,6 @@
 """Application configuration and constants."""
 
 from pathlib import Path
-from typing import Dict, List
 
 # Project Base Directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +28,7 @@ MAX_RECOMMENDATIONS_LIMIT = 30
 MAX_TFIDF_FEATURES = 10000
 
 # Canonical Schema Definitions & Common Synonyms
-SCHEMA_SYNONYMS: Dict[str, List[str]] = {
+SCHEMA_SYNONYMS: dict[str, list[str]] = {
     "title": [
         "title",
         "movie_title",
@@ -127,7 +126,7 @@ SCHEMA_SYNONYMS: Dict[str, List[str]] = {
 }
 
 # Recommendation Feature Weights
-DEFAULT_FEATURE_WEIGHTS: Dict[str, float] = {
+DEFAULT_FEATURE_WEIGHTS: dict[str, float] = {
     "genres": 2.0,
     "keywords": 1.5,
     "overview": 1.0,

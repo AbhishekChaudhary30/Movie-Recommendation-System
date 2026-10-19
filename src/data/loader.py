@@ -1,9 +1,10 @@
 """Dataset loader with robust encoding detection, size validation, and error handling."""
 
-from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any
+
 import pandas as pd
+
 from src.config import MAX_FILE_SIZE_MB
 from src.utils.exceptions import DataLoadError
 from src.utils.logging_config import get_logger
@@ -32,7 +33,7 @@ NULL_VALUES = [
 ]
 
 
-def check_file_size(file_input: Union[str, Path, Any], max_size_mb: int = MAX_FILE_SIZE_MB) -> int:
+def check_file_size(file_input: str | Path | Any, max_size_mb: int = MAX_FILE_SIZE_MB) -> int:
     """
     Check file size against max_size_mb. Returns size in bytes.
     Raises DataLoadError if file is empty or exceeds limit.
@@ -71,9 +72,9 @@ def check_file_size(file_input: Union[str, Path, Any], max_size_mb: int = MAX_FI
 
 
 def load_csv(
-    file_input: Union[str, Path, Any],
+    file_input: str | Path | Any,
     max_size_mb: int = MAX_FILE_SIZE_MB,
-    na_values: Optional[List[str]] = None,
+    na_values: list[str] | None = None,
 ) -> pd.DataFrame:
     """
     Load CSV dataset into a pandas DataFrame.
@@ -85,8 +86,8 @@ def load_csv(
     encodings_to_try = ["utf-8", "utf-8-sig", "latin-1", "cp1252"]
     na_vals = na_values if na_values is not None else NULL_VALUES
 
-    df: Optional[pd.DataFrame] = None
-    last_err: Optional[Exception] = None
+    df: pd.DataFrame | None = None
+    last_err: Exception | None = None
 
     for enc in encodings_to_try:
         try:

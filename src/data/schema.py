@@ -1,24 +1,25 @@
 """Schema detection and mapping layer for movie datasets."""
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set
 import re
+from dataclasses import dataclass, field
+
 from src.config import SCHEMA_SYNONYMS
+
 
 @dataclass
 class SchemaMapping:
     """Represents mapped dataset columns to canonical application schema."""
-    canonical_to_original: Dict[str, str] = field(default_factory=dict)
-    original_to_canonical: Dict[str, str] = field(default_factory=dict)
-    unmapped_columns: List[str] = field(default_factory=list)
-    available_features: List[str] = field(default_factory=list)
+    canonical_to_original: dict[str, str] = field(default_factory=dict)
+    original_to_canonical: dict[str, str] = field(default_factory=dict)
+    unmapped_columns: list[str] = field(default_factory=list)
+    available_features: list[str] = field(default_factory=list)
     has_title: bool = False
 
-    def get_original(self, canonical_name: str) -> Optional[str]:
+    def get_original(self, canonical_name: str) -> str | None:
         """Return the original column name mapped to a canonical key."""
         return self.canonical_to_original.get(canonical_name)
 
-    def get_canonical(self, original_name: str) -> Optional[str]:
+    def get_canonical(self, original_name: str) -> str | None:
         """Return the canonical key mapped to an original column name."""
         return self.original_to_canonical.get(original_name)
 
@@ -35,20 +36,20 @@ def normalize_column_name(col_name: str) -> str:
 
 
 def detect_schema(
-    columns: List[str],
-    user_overrides: Optional[Dict[str, str]] = None
+    columns: list[str],
+    user_overrides: dict[str, str] | None = None
 ) -> SchemaMapping:
     """
     Detect canonical schema from raw column names.
     Supports user overrides where user_overrides maps {canonical_name: original_column}.
     """
-    canonical_to_orig: Dict[str, str] = {}
-    orig_to_canonical: Dict[str, str] = {}
-    normalized_to_orig: Dict[str, str] = {
+    canonical_to_orig: dict[str, str] = {}
+    orig_to_canonical: dict[str, str] = {}
+    normalized_to_orig: dict[str, str] = {
         normalize_column_name(col): col for col in columns
     }
-    
-    assigned_origs: Set[str] = set()
+
+    assigned_origs: set[str] = set()
 
     # Apply user overrides first if provided and valid
     if user_overrides:

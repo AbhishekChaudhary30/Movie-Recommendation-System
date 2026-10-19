@@ -1,17 +1,19 @@
 """Content-based recommendation engine with feature weighting and explainability."""
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from scipy.sparse import spmatrix
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
+
 from src.config import DEFAULT_FEATURE_WEIGHTS, MAX_RECOMMENDATIONS_LIMIT
 from src.data.schema import SchemaMapping
 from src.preprocessing.feature_engineering import build_movie_soup, vectorize_features
 from src.recommendation.similarity import compute_query_similarity
-from src.utils.exceptions import InsufficientFeaturesError, RecommendationEngineError
+from src.utils.exceptions import RecommendationEngineError
 from src.utils.logging_config import get_logger
 
 logger = get_logger("recommender")
@@ -23,17 +25,17 @@ class RecommendationItem:
     display_title: str
     similarity_score: float
     similarity_pct: float
-    release_year: Optional[int]
-    rating: Optional[float]
+    release_year: int | None
+    rating: float | None
     genres: str
     cast: str
     director: str
     overview: str
-    shared_genres: List[str]
-    shared_cast: List[str]
-    shared_director: Optional[str]
-    shared_keywords: List[str]
-    shared_themes: List[str]
+    shared_genres: list[str]
+    shared_cast: list[str]
+    shared_director: str | None
+    shared_keywords: list[str]
+    shared_themes: list[str]
     explanation: str
 
 
@@ -48,20 +50,20 @@ class ContentBasedRecommender:
       - In-depth recommendation explanations
     """
 
-    def __init__(self, feature_weights: Optional[Dict[str, float]] = None):
+    def __init__(self, feature_weights: dict[str, float] | None = None):
         self.feature_weights = feature_weights or DEFAULT_FEATURE_WEIGHTS.copy()
-        self.df: Optional[pd.DataFrame] = None
-        self.schema_mapping: Optional[SchemaMapping] = None
-        self.tfidf_matrix: Optional[spmatrix] = None
-        self.vectorizer: Optional[TfidfVectorizer] = None
-        self.title_to_idx: Dict[str, int] = {}
+        self.df: pd.DataFrame | None = None
+        self.schema_mapping: SchemaMapping | None = None
+        self.tfidf_matrix: spmatrix | None = None
+        self.vectorizer: TfidfVectorizer | None = None
+        self.title_to_idx: dict[str, int] = {}
         self.feature_names: np.ndarray = np.array([])
 
     def fit(
         self,
         df: pd.DataFrame,
         schema_mapping: SchemaMapping,
-        feature_weights: Optional[Dict[str, float]] = None,
+        feature_weights: dict[str, float] | None = None,
     ) -> "ContentBasedRecommender":
         """
         Fit the recommender by building metadata soups and vectorizing features.
@@ -97,7 +99,7 @@ class ContentBasedRecommender:
 
         return self
 
-    def find_movie_index(self, query: Union[str, int]) -> int:
+    def find_movie_index(self, query: str | int) -> int:
         """Find the internal row index for a given title or index."""
         if self.df is None or self.df.empty:
             raise RecommendationEngineError("Recommender has not been fitted yet.")
@@ -120,14 +122,14 @@ class ContentBasedRecommender:
             f"Movie '{query}' not found in the dataset. Please select an available movie."
         )
 
-    def explain_similarity(self, query_idx: int, target_idx: int) -> Dict[str, Any]:
+    def explain_similarity(self, query_idx: int, target_idx: int) -> dict[str, Any]:
         """
         Extract detailed comparison explaining why target_idx was recommended for query_idx.
         """
         query_row = self.df.iloc[query_idx]
         target_row = self.df.iloc[target_idx]
 
-        def split_items(val: Any) -> Set[str]:
+        def split_items(val: Any) -> set[str]:
             if pd.isna(val) or not val:
                 return set()
             return {x.strip().lower() for x in str(val).split(",") if x.strip()}
@@ -154,7 +156,7 @@ class ContentBasedRecommender:
         shared_keywords = sorted(list(q_kw.intersection(t_kw)))
 
         # 5. Overlapping TF-IDF Theme Words
-        shared_themes: List[str] = []
+        shared_themes: list[str] = []
         if self.tfidf_matrix is not None and len(self.feature_names) > 0:
             q_vec = self.tfidf_matrix[query_idx].toarray().flatten()
             t_vec = self.tfidf_matrix[target_idx].toarray().flatten()
@@ -190,13 +192,13 @@ class ContentBasedRecommender:
 
     def recommend(
         self,
-        query: Union[str, int],
+        query: str | int,
         top_n: int = 10,
-        min_rating: Optional[float] = None,
-        genre_filter: Optional[str] = None,
-        year_min: Optional[int] = None,
-        year_max: Optional[int] = None,
-        min_similarity: Optional[float] = None,
+        min_rating: float | None = None,
+        genre_filter: str | None = None,
+        year_min: int | None = None,
+        year_max: int | None = None,
+        min_similarity: float | None = None,
     ) -> pd.DataFrame:
         """
         Generate top N content-based recommendations for a selected movie.
@@ -216,7 +218,7 @@ class ContentBasedRecommender:
         is_weak_query = query_norm < 1e-6
 
         # Build Candidate Records
-        candidates: List[Dict[str, Any]] = []
+        candidates: list[dict[str, Any]] = []
         for idx, score in enumerate(sim_scores):
             # 1. Strictly exclude the selected movie itself
             if idx == query_idx:
@@ -302,7 +304,7 @@ class ContentBasedRecommender:
         rec_df = pd.DataFrame(results)
         return rec_df
 
-    def get_movie_details(self, query: Union[str, int]) -> Dict[str, Any]:
+    def get_movie_details(self, query: str | int) -> dict[str, Any]:
         """Retrieve full details of a specific movie."""
         idx = self.find_movie_index(query)
         row = self.df.iloc[idx].to_dict()
@@ -311,9 +313,9 @@ class ContentBasedRecommender:
 
     def compute_pair_similarity(
         self,
-        movie1: Union[str, int],
-        movie2: Union[str, int],
-    ) -> Dict[str, Any]:
+        movie1: str | int,
+        movie2: str | int,
+    ) -> dict[str, Any]:
         """
         Compute direct pairwise similarity between any two movies in the dataset.
         Returns similarity score, percentage match, and detailed attribute rationale.

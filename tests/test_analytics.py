@@ -2,13 +2,12 @@
 
 import pandas as pd
 import pytest
+
 from src.analytics.metrics import (
     compute_overview_metrics,
     generate_executive_insights,
     get_decade_counts,
-    get_genre_counts,
     get_metadata_completeness,
-    get_unique_genres_list,
 )
 from src.analytics.reports import generate_executive_summary_markdown
 from src.data.cleaning import clean_dataset

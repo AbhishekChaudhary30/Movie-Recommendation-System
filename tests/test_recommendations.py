@@ -1,10 +1,11 @@
 """Unit tests for content-based recommendation engine."""
 
-import pytest
 import pandas as pd
+import pytest
+
+from src.data.cleaning import clean_dataset
 from src.data.loader import load_csv
 from src.data.schema import detect_schema
-from src.data.cleaning import clean_dataset
 from src.recommendation.content_based import ContentBasedRecommender
 from src.utils.exceptions import RecommendationEngineError
 

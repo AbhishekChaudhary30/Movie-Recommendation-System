@@ -3,6 +3,7 @@
 import logging
 import sys
 
+
 def get_logger(name: str = "movie_rec") -> logging.Logger:
     """Return a configured logger instance."""
     logger = logging.getLogger(name)

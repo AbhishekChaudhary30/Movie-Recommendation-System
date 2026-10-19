@@ -1,8 +1,10 @@
 """Reporting and export generation utilities for analytics and comparisons."""
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 import pandas as pd
+
 from src.analytics.metrics import (
     compute_overview_metrics,
     generate_executive_insights,
@@ -15,7 +17,7 @@ def generate_executive_summary_markdown(
     df: pd.DataFrame,
     dataset_name: str = "Uploaded Dataset",
     cleaning_report: Any = None,
-    recs_df: Optional[pd.DataFrame] = None,
+    recs_df: pd.DataFrame | None = None,
 ) -> str:
     """Generate a comprehensive, publication-ready Executive Analytics Report in Markdown."""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -31,8 +33,8 @@ def generate_executive_summary_markdown(
     peak_y = str(metrics.get('most_common_year') or "N/A")
     missing_desc = f"{metrics.get('missing_desc_pct', 0.0)}%"
 
-    lines: List[str] = [
-        f"# Executive Movie Analytics & Discovery Report",
+    lines: list[str] = [
+        "# Executive Movie Analytics & Discovery Report",
         f"**Generated:** {timestamp} | **Dataset:** `{dataset_name}`",
         "",
         "---",
@@ -110,7 +112,7 @@ def generate_executive_summary_markdown(
 
 def build_movie_comparison_matrix(
     df: pd.DataFrame,
-    movie_titles: List[str],
+    movie_titles: list[str],
     recommender: Any = None,
 ) -> pd.DataFrame:
     """

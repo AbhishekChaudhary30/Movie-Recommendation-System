@@ -1,12 +1,14 @@
 """Automatic data cleaning and quality reporting pipeline."""
 
 import ast
-from dataclasses import dataclass, field
 import json
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Any
+
 import numpy as np
 import pandas as pd
+
 from src.data.schema import SchemaMapping
 from src.utils.logging_config import get_logger
 
@@ -23,11 +25,11 @@ class CleaningReport:
     exact_duplicates_removed: int
     potential_duplicate_titles_count: int
     missing_titles_removed: int
-    missing_values_before: Dict[str, int]
-    missing_values_after: Dict[str, int]
-    anomalies_handled: Dict[str, int]
-    available_recommendation_features: List[str]
-    audit_log: List[str] = field(default_factory=list)
+    missing_values_before: dict[str, int]
+    missing_values_after: dict[str, int]
+    anomalies_handled: dict[str, int]
+    available_recommendation_features: list[str]
+    audit_log: list[str] = field(default_factory=list)
 
     def to_markdown(self) -> str:
         """Render the cleaning report as a clean Markdown string."""
@@ -46,7 +48,7 @@ class CleaningReport:
             md.append(f"- {item}")
         return "\n".join(md)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert report to dictionary."""
         return {
             "original_rows": self.original_rows,
@@ -64,7 +66,7 @@ class CleaningReport:
         }
 
 
-def parse_json_or_delimited(val: Any, max_items: Optional[int] = 5) -> str:
+def parse_json_or_delimited(val: Any, max_items: int | None = 5) -> str:
     """
     Parse complex values such as JSON strings, stringified lists,
     pipe-delimited, or comma-delimited strings into clean, readable text.
@@ -122,7 +124,7 @@ def parse_json_or_delimited(val: Any, max_items: Optional[int] = 5) -> str:
     return val_str
 
 
-def extract_year_from_value(val: Any) -> Optional[int]:
+def extract_year_from_value(val: Any) -> int | None:
     """Extract 4-digit release year safely from date strings or numbers."""
     if pd.isna(val) or val is None:
         return None
@@ -153,7 +155,7 @@ def extract_year_from_value(val: Any) -> Optional[int]:
     return None
 
 
-def extract_numeric_value(val: Any) -> Optional[float]:
+def extract_numeric_value(val: Any) -> float | None:
     """Safely extract float from numeric, string with units (e.g. '120 min', '1,500'), or text."""
     if pd.isna(val) or val is None:
         return np.nan
@@ -178,7 +180,7 @@ def extract_numeric_value(val: Any) -> Optional[float]:
 def clean_dataset(
     df: pd.DataFrame,
     schema_mapping: SchemaMapping,
-) -> Tuple[pd.DataFrame, CleaningReport]:
+) -> tuple[pd.DataFrame, CleaningReport]:
     """
     Execute full data cleaning pipeline:
     1. Drop completely empty rows and columns.
@@ -189,8 +191,8 @@ def clean_dataset(
     6. Sanitize numeric fields (rating, runtime, vote_count).
     7. Generate detailed CleaningReport.
     """
-    audit: List[str] = []
-    anomalies: Dict[str, int] = {}
+    audit: list[str] = []
+    anomalies: dict[str, int] = {}
 
     orig_rows, orig_cols = df.shape
     missing_before = {col: int(df[col].isna().sum()) for col in df.columns}
@@ -311,7 +313,7 @@ def clean_dataset(
         dup_titles_count = int(potential_dups.sum())
 
         display_titles = []
-        seen_title_indices: Dict[str, int] = {}
+        seen_title_indices: dict[str, int] = {}
 
         for _, row in cleaned.iterrows():
             title = row["raw_title"]

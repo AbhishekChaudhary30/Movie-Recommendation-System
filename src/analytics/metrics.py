@@ -1,14 +1,15 @@
 """Analytics foundation: summary statistics and Plotly visualization builders."""
 
-from typing import Any, Dict, List, Optional
-import numpy as np
+from typing import Any
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+
 from src.config import THEME
 
 
-def compute_overview_metrics(df: pd.DataFrame) -> Dict[str, Any]:
+def compute_overview_metrics(df: pd.DataFrame) -> dict[str, Any]:
     """Compute top-level summary metrics from cleaned dataset."""
     total_movies = len(df)
     unique_titles = df["raw_title"].nunique() if "raw_title" in df.columns else total_movies
@@ -61,9 +62,9 @@ def compute_overview_metrics(df: pd.DataFrame) -> Dict[str, Any]:
     }
 
 
-def generate_executive_insights(df: pd.DataFrame) -> List[str]:
+def generate_executive_insights(df: pd.DataFrame) -> list[str]:
     """Generate concise, evidence-based observations computed dynamically from the dataset."""
-    insights: List[str] = []
+    insights: list[str] = []
     total = len(df)
     if total == 0:
         return ["Dataset is empty. No analytical observations can be drawn."]
@@ -171,7 +172,7 @@ def get_metadata_completeness(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-def get_unique_genres_list(df: pd.DataFrame) -> List[str]:
+def get_unique_genres_list(df: pd.DataFrame) -> list[str]:
     """Extract sorted list of unique genres present in cleaned dataset."""
     if "cleaned_genres" not in df.columns:
         return []
@@ -189,7 +190,7 @@ def get_genre_counts(df: pd.DataFrame, top_n: int = 15) -> pd.DataFrame:
     if "cleaned_genres" not in df.columns:
         return pd.DataFrame(columns=["Genre", "Count"])
 
-    counts: Dict[str, int] = {}
+    counts: dict[str, int] = {}
     for val in df["cleaned_genres"].dropna():
         for g in str(val).split(","):
             g_clean = g.strip().title()
@@ -204,7 +205,7 @@ def get_genre_counts(df: pd.DataFrame, top_n: int = 15) -> pd.DataFrame:
     return df_counts.head(top_n).reset_index(drop=True)
 
 
-def plot_genre_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_genre_distribution(df: pd.DataFrame) -> go.Figure | None:
     """Plot interactive bar chart of movie genres."""
     df_genres = get_genre_counts(df, top_n=12)
     if df_genres.empty:
@@ -231,7 +232,7 @@ def plot_genre_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
     return fig
 
 
-def plot_release_year_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_release_year_distribution(df: pd.DataFrame) -> go.Figure | None:
     """Plot interactive histogram of movie release years."""
     if "cleaned_release_year" not in df.columns:
         return None
@@ -259,7 +260,7 @@ def plot_release_year_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
     return fig
 
 
-def plot_rating_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_rating_distribution(df: pd.DataFrame) -> go.Figure | None:
     """Plot interactive distribution of movie ratings."""
     if "cleaned_rating" not in df.columns:
         return None
@@ -287,7 +288,7 @@ def plot_rating_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
     return fig
 
 
-def plot_recommendation_similarity_scores(rec_df: pd.DataFrame) -> Optional[go.Figure]:
+def plot_recommendation_similarity_scores(rec_df: pd.DataFrame) -> go.Figure | None:
     """Plot similarity score comparison for generated recommendations."""
     if rec_df.empty or "similarity_pct" not in rec_df.columns:
         return None

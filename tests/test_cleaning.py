@@ -1,7 +1,12 @@
 """Unit tests for automatic data cleaning and quality reporting."""
 
 import pandas as pd
-from src.data.cleaning import clean_dataset, extract_year_from_value, parse_json_or_delimited
+
+from src.data.cleaning import (
+    clean_dataset,
+    extract_year_from_value,
+    parse_json_or_delimited,
+)
 from src.data.schema import detect_schema
 
 

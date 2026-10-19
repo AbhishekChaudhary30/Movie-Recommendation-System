@@ -3,6 +3,7 @@
 import numpy as np
 from scipy.sparse import spmatrix
 from sklearn.metrics.pairwise import linear_kernel
+
 from src.utils.logging_config import get_logger
 
 logger = get_logger("similarity")

@@ -1,7 +1,7 @@
 """Unit tests for movie comparison and pairwise similarity calculation."""
 
-import pandas as pd
 import pytest
+
 from src.analytics.reports import build_movie_comparison_matrix
 from src.data.cleaning import clean_dataset
 from src.data.loader import load_csv

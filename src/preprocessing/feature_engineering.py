@@ -1,9 +1,10 @@
 """Feature engineering: metadata soup construction and TF-IDF vectorization."""
 
-from typing import Dict, List, Optional, Tuple
+
 import pandas as pd
 from scipy.sparse import spmatrix
 from sklearn.feature_extraction.text import TfidfVectorizer
+
 from src.config import DEFAULT_FEATURE_WEIGHTS, MAX_TFIDF_FEATURES
 from src.preprocessing.text_processing import (
     clean_text,
@@ -18,17 +19,17 @@ logger = get_logger("feature_engineering")
 
 def build_movie_soup(
     df: pd.DataFrame,
-    feature_weights: Optional[Dict[str, float]] = None,
+    feature_weights: dict[str, float] | None = None,
 ) -> pd.Series:
     """
     Construct a weighted content representation ('soup') for each movie in the dataframe.
     Higher weighted features are proportionally repeated to influence TF-IDF term frequencies.
     """
     weights = feature_weights if feature_weights is not None else DEFAULT_FEATURE_WEIGHTS
-    soups: List[str] = []
+    soups: list[str] = []
 
     for _, row in df.iterrows():
-        parts: List[str] = []
+        parts: list[str] = []
 
         # 1. Genres
         genres_weight = max(1, int(round(weights.get("genres", 2.0))))
@@ -79,7 +80,7 @@ def build_movie_soup(
 def vectorize_features(
     soup_series: pd.Series,
     max_features: int = MAX_TFIDF_FEATURES,
-) -> Tuple[spmatrix, TfidfVectorizer]:
+) -> tuple[spmatrix, TfidfVectorizer]:
     """
     Vectorize the text soup using TF-IDF with sublinear term frequency scaling.
     Returns sparse CSR matrix and the fitted TfidfVectorizer.

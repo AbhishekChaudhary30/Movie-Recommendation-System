@@ -1,8 +1,16 @@
-"""Reusable light-themed UI presentation components for Streamlit."""
+import html
+from typing import Any
 
-from typing import Any, Dict, Optional
 import streamlit as st
-from src.config import APP_DESCRIPTION, APP_NAME, APP_SUBTITLE, APP_TITLE, APP_VERSION, THEME
+
+from src.config import (
+    APP_DESCRIPTION,
+    APP_NAME,
+    APP_SUBTITLE,
+    APP_VERSION,
+    THEME,
+)
+from src.data.posters import get_poster_source
 
 
 def render_hero():
@@ -38,7 +46,7 @@ def render_hero():
     )
 
 
-def render_metric_card(title: str, value: Any, subtext: str = "", border_color: Optional[str] = None):
+def render_metric_card(title: str, value: Any, subtext: str = "", border_color: str | None = None):
     """Render styled KPI card using Cinematic Neutral palette."""
     accent = border_color or THEME["border_subtle"]
     st.markdown(
@@ -86,9 +94,9 @@ def render_empty_state(icon: str, title: str, description: str, suggestion: str 
     )
 
 
-def render_movie_card(movie: Dict[str, Any], show_overview: bool = True):
-    """Render structured movie detail card in Cinematic Neutral style."""
-    title = movie.get("display_title", movie.get("raw_title", "Unknown Title"))
+def render_movie_card(movie: dict[str, Any], show_overview: bool = True):
+    """Render structured movie detail card in Cinematic Neutral style with genuine poster above information."""
+    title = movie.get("display_title") or movie.get("raw_title") or movie.get("title") or "Unknown Title"
     year = movie.get("cleaned_release_year")
     rating = movie.get("cleaned_rating")
     runtime = movie.get("cleaned_runtime")
@@ -101,31 +109,60 @@ def render_movie_card(movie: Dict[str, Any], show_overview: bool = True):
     rating_str = f"⭐ {rating}/10" if pd_notna(rating) else "⭐ N/A"
     runtime_str = f"⏱️ {int(runtime)}m" if pd_notna(runtime) else "⏱️ N/A"
 
+    # 1. MOVIE POSTER (TOP, Netflix-style)
+    poster_src = get_poster_source(movie)
+    if poster_src:
+        try:
+            st.image(poster_src, use_container_width=True)
+        except Exception:
+            st.markdown(
+                f"<div style='background-color: {THEME['surface_secondary']}; border: 1px dashed {THEME['border_subtle']}; border-radius: 8px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 8px;'>"
+                f"<div style='font-size: 2.2rem; opacity: 0.6;'>🎬</div>"
+                f"<div style='font-size: 0.82rem; color: {THEME['text_secondary']}; font-weight: 600; margin-top: 4px;'>Poster Unavailable</div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+    else:
+        st.markdown(
+            f"<div style='background-color: {THEME['surface_secondary']}; border: 1px dashed {THEME['border_subtle']}; border-radius: 8px; height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-bottom: 8px;'>"
+            f"<div style='font-size: 2.2rem; opacity: 0.6;'>🎬</div>"
+            f"<div style='font-size: 0.82rem; color: {THEME['text_secondary']}; font-weight: 600; margin-top: 4px;'>Poster Unavailable</div>"
+            f"</div>",
+            unsafe_allow_html=True,
+        )
+
+    # 2. MOVIE TITLE
     st.markdown(
-        f"""
-        <div style="background-color: {THEME['bg_surface']};
-                    border: 1px solid {THEME['border_subtle']};
-                    border-radius: 10px;
-                    padding: 18px 20px;
-                    margin-bottom: 14px;
-                    box-shadow: {THEME['card_shadow']};">
-            <div style="font-size: 1.25rem; font-weight: 800; color: {THEME['text_primary']}; margin-bottom: 6px;">
-                {title}
-            </div>
-            <div style="margin-bottom: 8px;">
-                <span style="background-color: {THEME['surface_secondary']}; color: {THEME['text_primary']}; font-size: 0.82rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin-right: 6px;">{year_str}</span>
-                <span style="background-color: #EDE8D0; color: #8C6A2E; font-size: 0.82rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; margin-right: 6px;">{rating_str}</span>
-                <span style="background-color: {THEME['surface_secondary']}; color: {THEME['text_secondary']}; font-size: 0.82rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin-right: 6px;">{runtime_str}</span>
-                <span style="background-color: #EFE9EC; color: {THEME['primary_accent']}; font-size: 0.82rem; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin-right: 6px;">🎭 {genres}</span>
-            </div>
-            <div style="font-size: 0.88rem; color: {THEME['text_secondary']}; margin-bottom: 6px;">
-                <b>Director:</b> {director} &nbsp;|&nbsp; <b>Cast:</b> {cast}
-            </div>
-            {f'<div style="font-size: 0.9rem; color: {THEME["text_primary"]}; line-height: 1.45; margin-top: 8px;">{overview}</div>' if show_overview else ''}
-        </div>
-        """,
+        f"<div style='font-size: 1.15rem; font-weight: 800; color: {THEME['text_primary']}; margin: 8px 0 6px 0; line-height: 1.25;'>"
+        f"{html.escape(str(title))}</div>",
         unsafe_allow_html=True,
     )
+
+    # 3. METADATA BADGES (Year, Rating, Runtime, Genres)
+    st.markdown(
+        f"<div style='margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 5px;'>"
+        f"<span style='background-color: {THEME['surface_secondary']}; color: {THEME['text_primary']}; font-size: 0.8rem; font-weight: 600; padding: 2px 7px; border-radius: 6px;'>{year_str}</span>"
+        f"<span style='background-color: #EDE8D0; color: #8C6A2E; font-size: 0.8rem; font-weight: 700; padding: 2px 7px; border-radius: 6px;'>{rating_str}</span>"
+        f"<span style='background-color: {THEME['surface_secondary']}; color: {THEME['text_secondary']}; font-size: 0.8rem; font-weight: 600; padding: 2px 7px; border-radius: 6px;'>{runtime_str}</span>"
+        f"<span style='background-color: #EFE9EC; color: {THEME['primary_accent']}; font-size: 0.8rem; font-weight: 600; padding: 2px 7px; border-radius: 6px;'>🎭 {html.escape(str(genres))}</span>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
+    # 4. DIRECTOR & CAST
+    st.markdown(
+        f"<div style='font-size: 0.86rem; color: {THEME['text_secondary']}; margin-bottom: 6px; line-height: 1.35;'>"
+        f"<b>Director:</b> {html.escape(str(director))} &nbsp;|&nbsp; <b>Cast:</b> {html.escape(str(cast))}</div>",
+        unsafe_allow_html=True,
+    )
+
+    # 5. OVERVIEW / DESCRIPTION
+    if show_overview and overview:
+        st.markdown(
+            f"<div style='font-size: 0.88rem; color: {THEME['text_primary']}; line-height: 1.45; margin-top: 6px; margin-bottom: 8px;'>"
+            f"{html.escape(str(overview))}</div>",
+            unsafe_allow_html=True,
+        )
 
 
 def render_how_it_works():

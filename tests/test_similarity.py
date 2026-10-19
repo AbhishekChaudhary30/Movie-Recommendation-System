@@ -1,12 +1,12 @@
 """Unit tests for similarity calculations."""
 
-import pytest
 import numpy as np
-import pandas as pd
+import pytest
 from sklearn.feature_extraction.text import TfidfVectorizer
+
 from src.recommendation.similarity import (
-    compute_query_similarity,
     compute_full_similarity_matrix,
+    compute_query_similarity,
 )
 
 
