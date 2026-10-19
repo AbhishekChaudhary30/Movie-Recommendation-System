@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import spmatrix
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
 from src.config import DEFAULT_FEATURE_WEIGHTS, MAX_RECOMMENDATIONS_LIMIT
 from src.data.schema import SchemaMapping
 from src.preprocessing.feature_engineering import build_movie_soup, vectorize_features
@@ -195,6 +196,7 @@ class ContentBasedRecommender:
         genre_filter: Optional[str] = None,
         year_min: Optional[int] = None,
         year_max: Optional[int] = None,
+        min_similarity: Optional[float] = None,
     ) -> pd.DataFrame:
         """
         Generate top N content-based recommendations for a selected movie.
@@ -219,6 +221,13 @@ class ContentBasedRecommender:
             # 1. Strictly exclude the selected movie itself
             if idx == query_idx:
                 continue
+
+            # Minimum similarity threshold filter
+            if min_similarity is not None and min_similarity > 0:
+                # min_similarity can be given as 0.0-1.0 or 0-100%
+                threshold = min_similarity if min_similarity <= 1.0 else (min_similarity / 100.0)
+                if float(score) < threshold:
+                    continue
 
             row = self.df.iloc[idx]
 
@@ -299,3 +308,41 @@ class ContentBasedRecommender:
         row = self.df.iloc[idx].to_dict()
         row["index"] = idx
         return row
+
+    def compute_pair_similarity(
+        self,
+        movie1: Union[str, int],
+        movie2: Union[str, int],
+    ) -> Dict[str, Any]:
+        """
+        Compute direct pairwise similarity between any two movies in the dataset.
+        Returns similarity score, percentage match, and detailed attribute rationale.
+        """
+        if self.df is None or self.tfidf_matrix is None:
+            raise RecommendationEngineError("Recommender is not trained or dataset is missing.")
+
+        idx1 = self.find_movie_index(movie1)
+        idx2 = self.find_movie_index(movie2)
+
+        if idx1 == idx2:
+            score = 1.0
+        else:
+            vec1 = self.tfidf_matrix[idx1]
+            vec2 = self.tfidf_matrix[idx2]
+            score = float(linear_kernel(vec1, vec2)[0, 0])
+
+        score = max(0.0, min(1.0, score))
+        explanation_info = self.explain_similarity(idx1, idx2)
+
+        return {
+            "movie1_title": self.df.iloc[idx1].get("display_title", str(movie1)),
+            "movie2_title": self.df.iloc[idx2].get("display_title", str(movie2)),
+            "similarity_score": round(score, 4),
+            "similarity_pct": round(score * 100, 1),
+            "shared_genres": explanation_info["shared_genres"],
+            "shared_cast": explanation_info["shared_cast"],
+            "shared_director": explanation_info["shared_director"],
+            "shared_keywords": explanation_info["shared_keywords"],
+            "shared_themes": explanation_info["shared_themes"],
+            "explanation": explanation_info["explanation"],
+        }

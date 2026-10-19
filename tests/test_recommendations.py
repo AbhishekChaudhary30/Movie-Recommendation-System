@@ -106,3 +106,15 @@ def test_recommender_handles_missing_metadata():
     recs = recommender.recommend("Bare Movie 1", top_n=2)
     assert len(recs) <= 2
     assert "Bare Movie 1" not in recs["display_title"].values
+
+
+def test_recommendation_min_similarity_filter(recommender_sample):
+    """Recommendations must filter candidates below the minimum similarity threshold."""
+    # With a high threshold, only highly similar movies should appear
+    recs_high = recommender_sample.recommend("The Dark Knight", top_n=10, min_similarity=0.20)
+    assert not recs_high.empty
+    assert all(r["similarity_score"] >= 0.20 for _, r in recs_high.iterrows())
+
+    # An unrealistically high threshold should return an empty dataframe without error
+    recs_none = recommender_sample.recommend("The Dark Knight", top_n=10, min_similarity=0.99)
+    assert recs_none.empty
