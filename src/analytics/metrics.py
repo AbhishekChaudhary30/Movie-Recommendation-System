@@ -216,12 +216,12 @@ def plot_genre_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
         y="Genre",
         orientation="h",
         color="Count",
-        color_continuous_scale=["#A29BFE", THEME["primary_accent"]],
+        color_continuous_scale=[THEME["surface_secondary"], THEME["primary_accent"]],
         title="Top Movie Genres in Dataset",
     )
     fig.update_layout(
-        plot_bgcolor="#FFFFFF",
-        paper_bgcolor="#FFFFFF",
+        plot_bgcolor=THEME["bg_surface"],
+        paper_bgcolor=THEME["bg_surface"],
         font=dict(color=THEME["text_primary"]),
         yaxis=dict(autorange="reversed"),
         coloraxis_showscale=False,
@@ -248,8 +248,8 @@ def plot_release_year_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
         color_discrete_sequence=[THEME["secondary_accent"]],
     )
     fig.update_layout(
-        plot_bgcolor="#FFFFFF",
-        paper_bgcolor="#FFFFFF",
+        plot_bgcolor=THEME["bg_surface"],
+        paper_bgcolor=THEME["bg_surface"],
         font=dict(color=THEME["text_primary"]),
         xaxis_title="Release Year",
         yaxis_title="Number of Movies",
@@ -273,11 +273,11 @@ def plot_rating_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
         x="cleaned_rating",
         nbins=20,
         title="Movie Rating Distribution",
-        color_discrete_sequence=[THEME["highlight_amber"]],
+        color_discrete_sequence=[THEME["primary_accent"]],
     )
     fig.update_layout(
-        plot_bgcolor="#FFFFFF",
-        paper_bgcolor="#FFFFFF",
+        plot_bgcolor=THEME["bg_surface"],
+        paper_bgcolor=THEME["bg_surface"],
         font=dict(color=THEME["text_primary"]),
         xaxis_title="Rating Score",
         yaxis_title="Count",
@@ -299,13 +299,13 @@ def plot_recommendation_similarity_scores(rec_df: pd.DataFrame) -> Optional[go.F
         y="display_title",
         orientation="h",
         color="similarity_pct",
-        color_continuous_scale=["#81ECEC", THEME["primary_accent"]],
+        color_continuous_scale=[THEME["surface_secondary"], THEME["primary_accent"]],
         title="Recommendation Match Strength (%)",
         labels={"similarity_pct": "Similarity Score (%)", "display_title": "Movie"},
     )
     fig.update_layout(
-        plot_bgcolor="#FFFFFF",
-        paper_bgcolor="#FFFFFF",
+        plot_bgcolor=THEME["bg_surface"],
+        paper_bgcolor=THEME["bg_surface"],
         font=dict(color=THEME["text_primary"]),
         coloraxis_showscale=False,
         margin=dict(l=20, r=20, t=40, b=20),

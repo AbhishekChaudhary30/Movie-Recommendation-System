@@ -14,11 +14,11 @@ from src.analytics.metrics import (
 )
 from src.config import THEME
 
-# Standard styling defaults for Plotly light theme
+# Standard styling defaults for Plotly Cinematic Neutral theme
 CHART_LAYOUT = dict(
-    plot_bgcolor="#FFFFFF",
-    paper_bgcolor="#FFFFFF",
-    font=dict(color=THEME["text_primary"], family="sans-serif"),
+    plot_bgcolor=THEME["bg_surface"],
+    paper_bgcolor=THEME["bg_surface"],
+    font=dict(color=THEME["text_primary"], family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"),
     margin=dict(l=24, r=24, t=44, b=24),
 )
 
@@ -54,7 +54,7 @@ def plot_genre_bar(df: pd.DataFrame, top_n: int = 12) -> Optional[go.Figure]:
         y="Genre",
         orientation="h",
         color="Count",
-        color_continuous_scale=["#C4B5FD", THEME["primary_accent"]],
+        color_continuous_scale=[THEME["surface_secondary"], THEME["primary_accent"]],
         title=f"Top {len(df_genres)} Movie Genres",
         labels={"Count": "Number of Movies", "Genre": "Genre"},
     )
@@ -73,13 +73,23 @@ def plot_genre_share_donut(df: pd.DataFrame, top_n: int = 8) -> Optional[go.Figu
     if df_genres.empty:
         return None
 
+    cinematic_colors = [
+        "#76566E",  # Restrained plum
+        "#477E79",  # Petrol teal
+        "#C39A5B",  # Subdued ochre
+        "#656B68",  # Muted slate
+        "#937B8F",  # Soft plum
+        "#6D9A95",  # Soft teal
+        "#8E6D38",  # Deep ochre
+        "#A48F7B",  # Warm taupe
+    ]
     fig = px.pie(
         df_genres,
         names="Genre",
         values="Count",
         hole=0.45,
         title=f"Genre Share (Top {len(df_genres)})",
-        color_discrete_sequence=px.colors.qualitative.Pastel,
+        color_discrete_sequence=cinematic_colors,
     )
     fig.update_layout(**CHART_LAYOUT, height=360)
     fig.update_traces(textposition="inside", textinfo="percent+label")
@@ -97,7 +107,7 @@ def plot_genre_treemap(df: pd.DataFrame, top_n: int = 15) -> Optional[go.Figure]
         path=["Genre"],
         values="Count",
         color="Count",
-        color_continuous_scale=["#DDD6FE", THEME["primary_accent"]],
+        color_continuous_scale=[THEME["surface_secondary"], THEME["primary_accent"]],
         title="Genre Proportions Treemap",
     )
     fig.update_layout(**CHART_LAYOUT, coloraxis_showscale=False, height=360)
@@ -129,7 +139,7 @@ def plot_genre_cooccurrence(df: pd.DataFrame, top_n: int = 8) -> Optional[go.Fig
         labels=dict(x="Genre", y="Co-occurring Genre", color="Movies"),
         x=top_genres,
         y=top_genres,
-        color_continuous_scale="Purples",
+        color_continuous_scale=[[0, THEME["bg_surface"]], [0.5, THEME["surface_secondary"]], [1.0, THEME["primary_accent"]]],
         title="Genre Co-Occurrence Matrix",
     )
     fig.update_layout(**CHART_LAYOUT, height=380)
@@ -154,10 +164,10 @@ def plot_rating_histogram(df: pd.DataFrame) -> Optional[go.Figure]:
         x="cleaned_rating",
         nbins=20,
         title=f"Movie Rating Distribution (Mean: {mean_val:.2f}/10)",
-        color_discrete_sequence=[THEME["highlight_amber"]],
+        color_discrete_sequence=[THEME["primary_accent"]],
         labels={"cleaned_rating": "Rating Score", "count": "Count"},
     )
-    fig.add_vline(x=mean_val, line_dash="dash", line_color=THEME["primary_accent"], annotation_text=f"Mean: {mean_val:.2f}")
+    fig.add_vline(x=mean_val, line_dash="dash", line_color=THEME["highlight_ochre"], annotation_text=f"Mean: {mean_val:.2f}")
     fig.update_layout(**CHART_LAYOUT, height=340)
     return fig
 
@@ -175,7 +185,7 @@ def plot_rating_box(df: pd.DataFrame) -> Optional[go.Figure]:
         y="cleaned_rating",
         points="all",
         title="Rating Summary & Quartiles",
-        color_discrete_sequence=[THEME["primary_accent"]],
+        color_discrete_sequence=[THEME["secondary_accent"]],
         labels={"cleaned_rating": "Rating"},
     )
     fig.update_layout(**CHART_LAYOUT, height=340)
@@ -212,7 +222,7 @@ def plot_rating_by_genre(df: pd.DataFrame, top_n: int = 8) -> Optional[go.Figure
         x="Genre",
         y="Average Rating",
         color="Average Rating",
-        color_continuous_scale=["#FCD34D", THEME["highlight_amber"]],
+        color_continuous_scale=[THEME["surface_secondary"], THEME["highlight_ochre"]],
         title="Average Rating by Major Genre",
         hover_data=["Movie Count"],
     )
@@ -235,7 +245,7 @@ def plot_rating_vs_votes_scatter(df: pd.DataFrame, log_votes: bool = True) -> Op
         y="cleaned_rating",
         hover_name="display_title" if "display_title" in valid.columns else None,
         color="cleaned_rating",
-        color_continuous_scale="Viridis",
+        color_continuous_scale=[THEME["surface_secondary"], THEME["secondary_accent"], THEME["primary_accent"]],
         title="Rating vs. Vote Count Engagement",
         labels={"cleaned_vote_count": "Vote Count", "cleaned_rating": "Rating (0-10)"},
         log_x=log_votes,
@@ -280,7 +290,7 @@ def plot_movies_by_decade(df: pd.DataFrame) -> Optional[go.Figure]:
         x="Decade",
         y="Count",
         color="Count",
-        color_continuous_scale=["#99F6E4", THEME["secondary_accent"]],
+        color_continuous_scale=[THEME["surface_secondary"], THEME["secondary_accent"]],
         title="Movie Catalog by Decade",
         labels={"Count": "Total Movies"},
     )
@@ -310,7 +320,7 @@ def plot_rating_trend_by_decade(df: pd.DataFrame) -> Optional[go.Figure]:
         labels={"mean": "Average Rating", "Decade_Label": "Decade"},
         hover_data={"count": True},
     )
-    fig.update_traces(line_color=THEME["primary_accent"], marker=dict(size=8))
+    fig.update_traces(line_color=THEME["primary_accent"], marker=dict(size=8, color=THEME["highlight_ochre"]))
     fig.update_layout(**CHART_LAYOUT, yaxis_range=[max(0, trend["mean"].min() - 1), 10], height=340)
     return fig
 
@@ -333,10 +343,10 @@ def plot_runtime_distribution(df: pd.DataFrame) -> Optional[go.Figure]:
         x="cleaned_runtime",
         nbins=20,
         title=f"Movie Runtime Distribution (Median: {med_rt:.0f} mins)",
-        color_discrete_sequence=["#6366F1"],
+        color_discrete_sequence=[THEME["secondary_accent"]],
         labels={"cleaned_runtime": "Runtime (Minutes)"},
     )
-    fig.add_vline(x=med_rt, line_dash="dash", line_color=THEME["highlight_amber"], annotation_text=f"Median: {med_rt:.0f}m")
+    fig.add_vline(x=med_rt, line_dash="dash", line_color=THEME["highlight_ochre"], annotation_text=f"Median: {med_rt:.0f}m")
     fig.update_layout(**CHART_LAYOUT, height=340)
     return fig
 
@@ -355,7 +365,7 @@ def plot_runtime_vs_rating_scatter(df: pd.DataFrame) -> Optional[go.Figure]:
         y="cleaned_rating",
         hover_name="display_title" if "display_title" in valid.columns else None,
         color="cleaned_rating",
-        color_continuous_scale="Plasma",
+        color_continuous_scale=[THEME["surface_secondary"], THEME["secondary_accent"], THEME["primary_accent"]],
         title="Runtime vs. Rating Correlation",
         labels={"cleaned_runtime": "Runtime (Minutes)", "cleaned_rating": "Rating (0-10)"},
     )
@@ -369,6 +379,8 @@ def plot_runtime_vs_rating_scatter(df: pd.DataFrame) -> Optional[go.Figure]:
 
 def plot_metadata_completeness_chart(df: pd.DataFrame) -> Optional[go.Figure]:
     """Horizontal bar chart indicating percentage completeness of key metadata fields."""
+    if df.empty:
+        return None
     comp_df = get_metadata_completeness(df)
     if comp_df.empty:
         return None
@@ -379,7 +391,7 @@ def plot_metadata_completeness_chart(df: pd.DataFrame) -> Optional[go.Figure]:
         y="Attribute",
         orientation="h",
         color="Completeness (%)",
-        color_continuous_scale=["#FECDD3", THEME["secondary_accent"]],
+        color_continuous_scale=[THEME["surface_secondary"], THEME["secondary_accent"]],
         title="Dataset Metadata Attribute Completeness (%)",
         range_x=[0, 100],
     )
@@ -405,7 +417,7 @@ def plot_overview_word_count(df: pd.DataFrame) -> Optional[go.Figure]:
         x="cleaned_overview",
         nbins=20,
         title="Overview Synopsis Word Count Distribution",
-        color_discrete_sequence=["#8B5CF6"],
+        color_discrete_sequence=[THEME["primary_accent"]],
         labels={"cleaned_overview": "Word Count", "count": "Frequency"},
     )
     fig.update_layout(**CHART_LAYOUT, height=340)
@@ -424,7 +436,7 @@ def plot_recommendation_similarity_scores(rec_df: pd.DataFrame) -> Optional[go.F
         y="display_title",
         orientation="h",
         color="similarity_pct",
-        color_continuous_scale=["#81ECEC", THEME["primary_accent"]],
+        color_continuous_scale=[THEME["surface_secondary"], THEME["primary_accent"]],
         title="Recommendation Match Strength (%)",
         labels={"similarity_pct": "Similarity Match (%)", "display_title": "Movie"},
     )

@@ -14,10 +14,11 @@ SAMPLE_DATA_DIR = DATA_DIR / "sample"
 
 # Application Metadata
 APP_TITLE = "Movie Recommendation System"
+APP_NAME = "CineScope"
 APP_SUBTITLE = "Intelligent Movie Discovery & Recommendation Analytics"
 APP_DESCRIPTION = (
-    "Discover movies you'll love through intelligent content-based filtering, "
-    "similarity scoring, movie metadata analysis, and personalized recommendations."
+    "CineScope transforms movie metadata into meaningful insights and relevant movie recommendations "
+    "through content-based machine learning, interactive analytics, and explainable similarity scoring."
 )
 APP_VERSION = "1.0.0"
 
@@ -134,15 +135,25 @@ DEFAULT_FEATURE_WEIGHTS: Dict[str, float] = {
     "director": 1.0,
 }
 
-# Theme Palette Tokens
+# Cinematic Neutral Design Tokens
+# Main background: warm stone (#E8E3DA)
+# Main surface: soft parchment (#F5F1E9)
+# Secondary surface: muted sage-gray (#D5D8CE)
+# Primary text: deep ink (#252B2B)
+# Secondary text: muted slate (#656B68)
+# Primary accent: restrained cinematic plum (#76566E)
+# Secondary accent: muted petrol teal (#477E79)
+# Highlight: subdued ochre (#C39A5B)
+# Borders: warm gray (#CDC8BE)
 THEME = {
-    "bg_main": "#FBFBFD",
-    "bg_surface": "#FFFFFF",
-    "primary_accent": "#6C5CE7",
-    "secondary_accent": "#00B894",
-    "highlight_amber": "#E17055",
-    "text_primary": "#1E272E",
-    "text_secondary": "#636E72",
-    "border_subtle": "#E2E8F0",
-    "card_shadow": "0 4px 14px rgba(0, 0, 0, 0.05)",
+    "bg_main": "#E8E3DA",
+    "bg_surface": "#F5F1E9",
+    "surface_secondary": "#D5D8CE",
+    "text_primary": "#252B2B",
+    "text_secondary": "#656B68",
+    "primary_accent": "#76566E",
+    "secondary_accent": "#477E79",
+    "highlight_ochre": "#C39A5B",
+    "border_subtle": "#CDC8BE",
+    "card_shadow": "0 2px 10px rgba(37, 43, 43, 0.05)",
 }

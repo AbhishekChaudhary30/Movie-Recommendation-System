@@ -153,6 +153,28 @@ def extract_year_from_value(val: Any) -> Optional[int]:
     return None
 
 
+def extract_numeric_value(val: Any) -> Optional[float]:
+    """Safely extract float from numeric, string with units (e.g. '120 min', '1,500'), or text."""
+    if pd.isna(val) or val is None:
+        return np.nan
+    if isinstance(val, (int, float, np.integer, np.floating)):
+        return float(val)
+    val_str = str(val).strip().replace(",", "")
+    if not val_str:
+        return np.nan
+    try:
+        return float(val_str)
+    except ValueError:
+        pass
+    match = re.search(r"[-+]?\d*\.?\d+", val_str)
+    if match:
+        try:
+            return float(match.group())
+        except ValueError:
+            pass
+    return np.nan
+
+
 def clean_dataset(
     df: pd.DataFrame,
     schema_mapping: SchemaMapping,
@@ -245,7 +267,7 @@ def clean_dataset(
     # 6. Sanitize Numeric Fields (rating, runtime, vote_count)
     rating_col = schema_mapping.get_original("rating")
     if rating_col and rating_col in cleaned.columns:
-        ratings = pd.to_numeric(cleaned[rating_col], errors="coerce")
+        ratings = cleaned[rating_col].apply(extract_numeric_value)
         # Check negative ratings
         neg_ratings = int((ratings < 0).sum())
         if neg_ratings > 0:
@@ -258,7 +280,7 @@ def clean_dataset(
 
     runtime_col = schema_mapping.get_original("runtime")
     if runtime_col and runtime_col in cleaned.columns:
-        runtimes = pd.to_numeric(cleaned[runtime_col], errors="coerce")
+        runtimes = cleaned[runtime_col].apply(extract_numeric_value)
         neg_runtimes = int((runtimes < 0).sum())
         if neg_runtimes > 0:
             runtimes = runtimes.apply(lambda r: np.nan if r < 0 else r)
@@ -270,7 +292,7 @@ def clean_dataset(
 
     vote_count_col = schema_mapping.get_original("vote_count")
     if vote_count_col and vote_count_col in cleaned.columns:
-        votes = pd.to_numeric(cleaned[vote_count_col], errors="coerce")
+        votes = cleaned[vote_count_col].apply(extract_numeric_value)
         neg_votes = int((votes < 0).sum())
         if neg_votes > 0:
             votes = votes.apply(lambda v: np.nan if v < 0 else v)

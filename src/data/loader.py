@@ -38,7 +38,9 @@ def check_file_size(file_input: Union[str, Path, Any], max_size_mb: int = MAX_FI
     Raises DataLoadError if file is empty or exceeds limit.
     """
     size_bytes = 0
-    if isinstance(file_input, (str, Path)):
+    if isinstance(file_input, (int, float)):
+        size_bytes = int(file_input)
+    elif isinstance(file_input, (str, Path)):
         p = Path(file_input)
         if not p.exists():
             raise DataLoadError(f"File not found: {p}")

@@ -45,6 +45,7 @@ from src.analytics.visualizations import (
 )
 from src.config import (
     APP_DESCRIPTION,
+    APP_NAME,
     APP_SUBTITLE,
     APP_TITLE,
     APP_VERSION,
@@ -68,13 +69,13 @@ from src.utils.exceptions import DataLoadError, MovieRecommendationError
 
 # Page Configuration
 st.set_page_config(
-    page_title=f"{APP_TITLE} | Cinema Analytics",
+    page_title=f"{APP_NAME} | {APP_SUBTITLE}",
     page_icon="🎬",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Custom Light Theme CSS
+# Custom Cinematic Neutral Theme CSS
 CUSTOM_CSS = f"""
 <style>
     /* App background */
@@ -91,13 +92,13 @@ CUSTOM_CSS = f"""
         letter-spacing: -0.02em;
     }}
 
-    /* Main Container Padding */
+    /* Main Container Spacing */
     .block-container {{
         padding-top: 1.8rem;
         padding-bottom: 3.5rem;
     }}
 
-    /* Cards */
+    /* Surface Cards */
     .cinema-card {{
         background-color: {THEME['bg_surface']};
         border: 1px solid {THEME['border_subtle']};
@@ -116,10 +117,11 @@ CUSTOM_CSS = f"""
         padding: 20px 22px;
         margin-bottom: 16px;
         box-shadow: {THEME['card_shadow']};
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
     }}
     .rec-card:hover {{
         border-color: {THEME['primary_accent']};
-        box-shadow: 0 6px 20px rgba(108, 92, 231, 0.12);
+        box-shadow: 0 4px 16px rgba(118, 86, 110, 0.15);
     }}
     .rec-title {{
         font-size: 1.25rem;
@@ -128,7 +130,7 @@ CUSTOM_CSS = f"""
         margin-bottom: 6px;
     }}
     .rec-score-badge {{
-        background-color: #EDE9FE;
+        background-color: {THEME['surface_secondary']};
         color: {THEME['primary_accent']};
         font-size: 0.82rem;
         font-weight: 700;
@@ -138,7 +140,7 @@ CUSTOM_CSS = f"""
         margin-right: 8px;
     }}
     .meta-tag {{
-        background-color: #F1F5F9;
+        background-color: {THEME['surface_secondary']};
         color: {THEME['text_secondary']};
         font-size: 0.8rem;
         font-weight: 600;
@@ -148,7 +150,7 @@ CUSTOM_CSS = f"""
         margin-right: 6px;
     }}
     .exp-box {{
-        background-color: #F8FAFC;
+        background-color: {THEME['bg_main']};
         border: 1px dashed {THEME['border_subtle']};
         border-radius: 8px;
         padding: 10px 14px;
@@ -237,8 +239,8 @@ with st.sidebar:
     st.markdown(
         f"""
         <div style="padding-bottom: 10px;">
-            <div style="font-size: 1.25rem; font-weight: 800; color: {THEME['primary_accent']};">🎬 Movie Rec System</div>
-            <div style="font-size: 0.8rem; color: {THEME['text_secondary']};">Intelligent Discovery & Analytics v{APP_VERSION}</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: {THEME['primary_accent']}; letter-spacing: -0.02em;">🎬 {APP_NAME}</div>
+            <div style="font-size: 0.8rem; color: {THEME['text_secondary']};">{APP_SUBTITLE} &bull; v{APP_VERSION}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -439,7 +441,7 @@ if st.session_state.nav_page == "🏠 Home":
             badge_color = THEME["secondary_accent"] if done else "#94A3B8"
             st.markdown(
                 f"""
-                <div style="background-color: #FFFFFF; border: 1px solid {THEME['border_subtle']}; border-radius: 10px; padding: 12px; text-align: center;">
+                <div style="background-color: {THEME['bg_surface']}; border: 1px solid {THEME['border_subtle']}; border-radius: 10px; padding: 12px; text-align: center;">
                     <span style="background-color: {badge_color}; color: white; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 12px;">{status_badge}</span>
                     <div style="font-size: 0.95rem; font-weight: 700; color: {THEME['text_primary']}; margin-top: 6px;">{name}</div>
                     <div style="font-size: 0.78rem; color: {THEME['text_secondary']}; margin-top: 2px;">{desc}</div>
@@ -881,7 +883,7 @@ elif st.session_state.nav_page == "🎯 Recommendations":
     seed_details = recommender.get_movie_details(chosen_seed)
     st.markdown(
         f"""
-        <div style="background-color: #FFFFFF; border: 1px solid {THEME['border_subtle']}; border-radius: 12px; padding: 18px 22px; margin: 16px 0; box-shadow: {THEME['card_shadow']};">
+        <div style="background-color: {THEME['bg_surface']}; border: 1px solid {THEME['border_subtle']}; border-radius: 12px; padding: 18px 22px; margin: 16px 0; box-shadow: {THEME['card_shadow']};">
             <span style="font-size: 0.8rem; font-weight: 700; color: {THEME['primary_accent']}; text-transform: uppercase;">SEED MOVIE</span>
             <div style="font-size: 1.45rem; font-weight: 800; color: {THEME['text_primary']}; margin: 4px 0;">{seed_details.get('display_title')}</div>
             <div style="margin-bottom: 8px;">
@@ -1028,12 +1030,12 @@ elif st.session_state.nav_page == "⚖️ Compare Movies":
                 sim_res = recommender.compute_pair_similarity(m1, m2)
                 st.markdown(
                     f"""
-                    <div style="background-color: #EDE9FE; border: 1px solid #DDD6FE; border-radius: 10px; padding: 14px 20px; margin-bottom: 16px;">
+                    <div style="background-color: {THEME['bg_surface']}; border: 1px solid {THEME['border_subtle']}; border-left: 4px solid {THEME['primary_accent']}; border-radius: 10px; padding: 14px 20px; margin-bottom: 16px; box-shadow: {THEME['card_shadow']};">
                         <span style="font-size: 0.82rem; font-weight: 700; color: {THEME['primary_accent']}; text-transform: uppercase;">Direct Pairwise Similarity</span>
                         <div style="font-size: 1.15rem; font-weight: 700; color: {THEME['text_primary']}; margin: 2px 0;">
                             <b>{m1}</b> vs. <b>{m2}</b>: <span style="color: {THEME['primary_accent']};">{sim_res['similarity_pct']}% Match</span>
                         </div>
-                        <div style="font-size: 0.88rem; color: #4B5563;">
+                        <div style="font-size: 0.88rem; color: {THEME['text_secondary']};">
                             <b>Rationale:</b> {sim_res['explanation']}
                         </div>
                     </div>
@@ -1118,7 +1120,7 @@ elif st.session_state.nav_page == "📊 Analytics Dashboard":
         with ins_cols[i % 2]:
             st.markdown(
                 f"""
-                <div style="background-color: #FFFFFF; border-left: 4px solid {THEME['secondary_accent']}; border: 1px solid {THEME['border_subtle']}; border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; font-size: 0.92rem;">
+                <div style="background-color: {THEME['bg_surface']}; border-left: 4px solid {THEME['secondary_accent']}; border: 1px solid {THEME['border_subtle']}; border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; font-size: 0.92rem;">
                     {ins}
                 </div>
                 """,
@@ -1281,8 +1283,8 @@ elif st.session_state.nav_page == "📈 Advanced Visualizations":
         with chart_cols[idx % 2]:
             st.markdown(
                 f"""
-                <div style="background-color: #FFFFFF; border: 1px solid {THEME['border_subtle']}; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; box-shadow: {THEME['card_shadow']};">
-                    <span style="background-color: #EDE9FE; color: {THEME['primary_accent']}; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">
+                <div style="background-color: {THEME['bg_surface']}; border: 1px solid {THEME['border_subtle']}; border-radius: 12px; padding: 18px 20px; margin-bottom: 20px; box-shadow: {THEME['card_shadow']};">
+                    <span style="background-color: {THEME['surface_secondary']}; color: {THEME['primary_accent']}; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">
                         {chart_def.category}
                     </span>
                     <div style="font-size: 1.15rem; font-weight: 700; color: {THEME['text_primary']}; margin: 6px 0 2px 0;">
@@ -1439,51 +1441,119 @@ elif st.session_state.nav_page == "📥 Reports & Downloads":
 # PAGE 9: ℹ️ ABOUT THIS PROJECT
 # ==============================================================================
 elif st.session_state.nav_page == "ℹ️ About This Project":
-    st.subheader("ℹ️ About the Movie Recommendation System")
-    st.write(
-        "A portfolio-quality, production-ready machine learning and data engineering application "
-        "designed for demonstration to technical recruiters, machine learning engineers, and software architects."
+    st.subheader(f"ℹ️ About {APP_NAME} ({APP_TITLE})")
+    st.markdown(
+        f"""
+        <div style="background-color: {THEME['bg_surface']}; border: 1px solid {THEME['border_subtle']}; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px;">
+            <div style="font-size: 1.3rem; font-weight: 800; color: {THEME['primary_accent']}; margin-bottom: 6px;">
+                {APP_NAME} &bull; {APP_SUBTITLE}
+            </div>
+            <div style="font-size: 0.95rem; color: {THEME['text_primary']}; line-height: 1.55; margin-bottom: 12px;">
+                {APP_DESCRIPTION}
+            </div>
+            <div style="background-color: {THEME['bg_main']}; border-left: 4px solid {THEME['secondary_accent']}; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; color: {THEME['text_secondary']};">
+                <b>Scope & Boundaries Disclosure:</b> CineScope is an analytical data engineering and machine learning product designed for reproducible portfolio demonstration. It performs mathematical content-based modeling on uploaded or sample metadata catalogs. It does <b>not</b> connect to proprietary streaming services (Netflix, Amazon Prime, Disney+, etc.) and does <b>not</b> track personal user viewing histories or commercial licensing rights.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
-    t1, t2, t3 = st.tabs(["🏗️ Architecture & ML Design", "🛡️ Privacy & Performance", "💼 Recruiter & Interview Highlights"])
+    t1, t2, t3, t4 = st.tabs([
+        "🏗️ Architecture & ML Design",
+        "📐 Mathematical Foundations",
+        "🛡️ Privacy, Security & Resource Governance",
+        "💼 Recruiter & Technical Interview Guide",
+    ])
 
     with t1:
         st.markdown(
-            r"""
-            #### System Architecture & Mathematical Foundations
+            f"""
+            #### System Architecture & Modular Decoupling
             
-            1. **Flexible Data Pipeline**:
-               - Accepts varied schemas using synonym detection (e.g. `title` vs `movie_title` vs `original_title`).
-               - Handles nested TMDB JSON structures (`[{"name": "Action"}]`) and delimited strings safely.
-               - Strips blank rows, drops exact duplicates, and disambiguates remake titles with release years.
+            ```
+            ┌─────────────────────────────────────────────────────────────┐
+            │                     CineScope UI (Streamlit)                │
+            │   9 Integrated Workflow Pages • Cinematic Neutral Design    │
+            └───────────────▲─────────────────────────────▲───────────────┘
+                            │                             │
+            ┌───────────────┴─────────────┐ ┌─────────────┴───────────────┐
+            │   Analytics & Reporting     │ │    Recommendation Engine    │
+            │   • 15+ Plotly Visuals      │ │    • Content-Based Filtering│
+            │   • Descriptive KPIs        │ │    • Sparse Cosine Dot Prod │
+            │   • Executive Summary MD    │ │    • Multi-factor Explainer │
+            └───────────────▲─────────────┘ └─────────────▲───────────────┘
+                            │                             │
+            ┌───────────────┴─────────────────────────────┴───────────────┐
+            │                Preprocessing & Feature Soup                 │
+            │      • Entity Tokenization (e.g. christopher_nolan)         │
+            │      • Weighted Metadata Soup Creation                      │
+            │      • Sublinear TF-IDF Vectorizer (max 10,000 features)   │
+            └──────────────────────────────▲──────────────────────────────┘
+                                           │
+            ┌──────────────────────────────┴──────────────────────────────┐
+            │                 Data Engineering Pipeline                   │
+            │      • Multi-Encoding Ingestion (UTF-8, Latin-1, CP1252)    │
+            │      • Schema Synonym Detection (16 canonical fields)       │
+            │      • Quality Validation & Cleaning Audit Reporter         │
+            └─────────────────────────────────────────────────────────────┘
+            ```
             
-            2. **TF-IDF Vector Space Representation**:
-               $$\text{tf-idf}(t, d, D) = \text{tf}(t, d) \times \text{idf}(t, D)$$
-               Uses sublinear term frequency scaling ($1 + \log(\text{tf})$) to prevent high-frequency words from skewing matches.
-            
-            3. **Memory-Aware Sparse Cosine Similarity**:
-               Unlike basic tutorials that compute an $O(N^2)$ dense matrix (which quickly triggers out-of-memory crashes on realistic datasets), this engine computes $1 \times N$ sparse linear algebra on-the-fly:
-               $$\cos(\theta) = \frac{u \cdot v}{\|u\|_2 \|v\|_2}$$
-               Execution time is under 5 milliseconds per query in $O(N)$ memory space!
+            - **Strict Separation of Concerns**: Core data, recommendation, and analytics modules contain pure Python logic completely decoupled from Streamlit UI elements, allowing 100% unit testing coverage in headless CI environments.
+            - **State Machine Safety**: Dynamic dataset transitions instantly flush stale similarity matrices, cached recommendations, and active filters to prevent dirty-read anomalies.
             """
         )
 
     with t2:
         st.markdown(
-            f"""
-            #### Privacy, Security & Resource Governance
-            - **No External Paid APIs**: Fully self-contained open-source stack (Python, Scikit-Learn, Streamlit).
-            - **Data Isolation**: Uploaded raw files and processed exports are strictly excluded via `.gitignore`.
-            - **Resource Guardrails**: Enforces a 50MB file size ceiling to ensure flawless stability within free cloud hosting memory limits (e.g., Streamlit Community Cloud).
+            r"""
+            #### Mathematical Modeling & Algorithmic Formulation
+
+            ##### 1. Sublinear TF-IDF Vector Space Modeling
+            Each movie is converted into a weighted "metadata soup" combining genres ($2.0\times$), director ($1.0\times$), cast ($1.2\times$), keywords ($1.5\times$), and synopsis ($1.0\times$).
+
+            The TF-IDF transformation applies sublinear term frequency scaling:
+            $$\text{tf-idf}(t, d, D) = \left(1 + \log(\text{tf}(t, d))\right) \times \log\left(\frac{1 + |D|}{1 + |\{d \in D : t \in d\}|}\right) + 1$$
+            This logarithmic dampening prevents common words (e.g., repeated character names or genre tags) from drowning out distinctive narrative tokens.
+
+            ##### 2. Memory-Aware Sparse Cosine Similarity
+            Unlike introductory tutorials that construct a full $N \times N$ dense matrix ($O(N^2)$ memory, requiring gigabytes of RAM for modest catalogs):
+            $$\cos(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\|_2 \|\mathbf{v}\|_2}$$
+            CineScope stores the feature matrix in Scipy Compressed Sparse Row (`csr_matrix`) format and computes $1 \times N$ sparse linear dot products on-demand:
+            - **Memory Complexity**: $O(N \times \text{nonzero terms})$ instead of $O(N^2)$
+            - **Execution Latency**: $< 5 \text{ milliseconds}$ per query for 5,000+ movies
+            - **Reproducibility**: Ties in similarity scores are broken deterministically by rating and vote count.
+
+            ##### 3. Content-Based Model Limitations
+            - **Overspecialization (Filter Bubble)**: Content-based recommenders recommend items similar in metadata description. They cannot discover serendipitous connections across genres without collaborative user interaction signals.
+            - **Cold Start for Features**: Movies with null overviews and empty cast metadata receive lower dimensional representations. CineScope handles this with defensive fallback tokens (`unknown_genre`, `general_narrative`).
+            - **Descriptive Similarity vs. User Enjoyment**: Similarity indicates feature proximity, not a prediction of individual subjective preference.
             """
         )
 
     with t3:
         st.markdown(
             f"""
-            #### Portfolio & Interview Discussion Talking Points
-            - **Defensive Engineering**: Handles missing genres, missing overviews, and unmapped columns gracefully with fallback tokens and informative diagnostics.
-            - **Explainability**: Recommendations provide transparent rationales (overlapping genres, director matches, shared cast, and top TF-IDF thematic terms).
-            - **Separation of Concerns**: Modular decoupled package design (`data`, `preprocessing`, `recommendation`, `analytics`, `ui`) with 32+ unit tests.
+            #### Privacy, Security & Resource Governance
+
+            - **Zero External API Dependencies**: CineScope runs entirely offline using Scikit-Learn, Pandas, NumPy, and Streamlit — no paid OpenAI, TMDB, or third-party API keys required.
+            - **Session Isolation**: User uploads reside strictly in private Streamlit session states and are never persisted to public directories or shared across concurrent sessions.
+            - **Strict `.gitignore` Boundaries**: Raw uploaded CSVs, processed caches, virtual environments, and `.env` files are excluded from git tracking.
+            - **Cloud Resource Guardrails**: A configurable 50MB file size ceiling and sparse matrix calculations prevent out-of-memory crashes on free cloud hosting platforms (e.g. Streamlit Community Cloud).
+            """
+        )
+
+    with t4:
+        st.markdown(
+            f"""
+            #### Portfolio & Technical Interview Discussion Points
+
+            | Question / Topic | CineScope Engineering Response |
+            | :--- | :--- |
+            | **Why Content-Based over Collaborative Filtering?** | Content-based filtering is ideal for catalog discovery where user interaction history is unavailable (resolving the cold-start problem for users). It is fully explainable via metadata attribution. |
+            | **How do you prevent memory crashes on large datasets?** | We avoid computing the dense $N \\times N$ similarity matrix. Instead, we preserve the sparse CSR matrix and calculate single-row vector dot products in $O(N)$ space. |
+            | **How do you handle multi-word names (e.g. Tom Hanks vs Tom Hardy)?** | Entity tokenization concatenates multi-word names with underscores (`tom_hanks`, `tom_hardy`), preventing spurious unigram overlap on common first names. |
+            | **How do you handle schema variations across different CSV sources?** | A multi-synonym schema detection engine maps 16 canonical attributes against 50+ common naming conventions, verified with user override selectors. |
+            | **How do you evaluate recommendation quality without user ratings?** | We evaluate internal coherence (mean intra-list similarity), metadata coverage, genre diversity, and qualitative explanation attribution. |
             """
         )
